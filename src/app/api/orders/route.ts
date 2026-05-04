@@ -1,4 +1,9 @@
 import { orders } from "@/lib/sample-data";
+import {
+  createCustomerPortalOrder,
+  OrderValidationError,
+  parseCustomerOrderInput
+} from "@/lib/order-service";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
@@ -12,17 +17,42 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  try {
+    const body = await request.json();
+    const input = parseCustomerOrderInput(body);
+    const order = createCustomerPortalOrder(input);
 
-  return NextResponse.json(
-    {
-      data: {
-        code: "BM-1043",
-        status: "aguardando_confirmacao",
-        source: "customer_portal",
-        ...body
-      }
-    },
-    { status: 201 }
-  );
+    return NextResponse.json(
+      {
+        data: order,
+        meta: {
+          source: "mock",
+          message:
+            "Pedido validado no servidor. Persistencia com Prisma entra na proxima etapa."
+        }
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    if (error instanceof OrderValidationError) {
+      return NextResponse.json(
+        {
+          error: {
+            message: "Nao foi possivel criar o pedido.",
+            issues: error.issues
+          }
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        error: {
+          message: "Erro inesperado ao criar pedido."
+        }
+      },
+      { status: 500 }
+    );
+  }
 }

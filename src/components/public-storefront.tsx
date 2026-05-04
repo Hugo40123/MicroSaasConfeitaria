@@ -10,20 +10,30 @@ import {
   ShoppingCart,
   Store
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { type CSSProperties, type FormEvent, useMemo, useState } from "react";
 
 type CartItem = {
   product: Product;
   quantity: number;
 };
 
+type CreatedOrder = {
+  code: string;
+  trackingUrl: string;
+};
+
 const categories = ["Todos", "Bolos inteiros", "Fatias", "Doces", "Extras"] as const;
 
 export function PublicStorefront() {
-  const [activeCategory, setActiveCategory] = useState<(typeof categories)[number]>("Todos");
+  const [activeCategory, setActiveCategory] =
+    useState<(typeof categories)[number]>("Todos");
   const [cart, setCart] = useState<Record<string, CartItem>>({});
-  const [fulfillment, setFulfillment] = useState<"Retirada" | "Entrega">("Retirada");
-  const [submitted, setSubmitted] = useState(false);
+  const [fulfillment, setFulfillment] = useState<"Retirada" | "Entrega">(
+    "Retirada"
+  );
+  const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
+  const [formError, setFormError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const visibleProducts = useMemo(() => {
     return products.filter((product) => {
@@ -69,26 +79,83 @@ export function PublicStorefront() {
     });
   }
 
-  if (submitted) {
+  async function submitOrder(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (cartItems.length === 0) {
+      setFormError("Adicione pelo menos um produto ao carrinho.");
+      return;
+    }
+
+    const formData = new FormData(event.currentTarget);
+    const payload = {
+      storeSlug: store.slug,
+      customerName: String(formData.get("customerName") ?? ""),
+      customerWhatsapp: String(formData.get("customerWhatsapp") ?? ""),
+      fulfillment,
+      deliveryAddress: String(formData.get("deliveryAddress") ?? ""),
+      deliveryDate: String(formData.get("deliveryDate") ?? ""),
+      customerNotes: String(formData.get("customerNotes") ?? ""),
+      items: cartItems.map((item) => ({
+        productId: item.product.id,
+        quantity: item.quantity
+      }))
+    };
+
+    setFormError("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        const issues = Array.isArray(result.error?.issues)
+          ? result.error.issues.join(" ")
+          : result.error?.message;
+
+        setFormError(issues || "Nao foi possivel enviar o pedido.");
+        return;
+      }
+
+      setCreatedOrder({
+        code: result.data.code,
+        trackingUrl: result.data.trackingUrl
+      });
+      setCart({});
+    } catch {
+      setFormError("Nao foi possivel conectar com o servidor. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  if (createdOrder) {
     return (
       <main className="storefront">
         <section className="store-hero">
           <div className="store-banner">
             <div className="store-banner-inner">
               <p className="eyebrow">Pedido enviado</p>
-              <h1>Seu pedido entrou para confirmação da loja.</h1>
+              <h1>Seu pedido entrou para confirmacao da loja.</h1>
               <p>
-                Código BM-1042 · A {store.name} vai revisar disponibilidade, prazo e
-                sinal antes de iniciar a produção.
+                Codigo {createdOrder.code} - A {store.name} vai revisar
+                disponibilidade, prazo e sinal antes de iniciar a producao.
               </p>
             </div>
           </div>
           <div className="actions">
-            <a className="btn btn-primary" href="/pedido/BM-1042">
+            <a className="btn btn-primary" href={createdOrder.trackingUrl}>
               <CheckCircle2 aria-hidden="true" />
               Acompanhar pedido
             </a>
-            <a className="btn btn-secondary" href={`https://wa.me/5511999992323`}>
+            <a className="btn btn-secondary" href="https://wa.me/5511999992323">
               <Send aria-hidden="true" />
               Chamar no WhatsApp
             </a>
@@ -103,7 +170,7 @@ export function PublicStorefront() {
       <section className="store-hero">
         <div className="store-banner">
           <div className="store-banner-inner">
-            <p className="eyebrow">Cardápio online</p>
+            <p className="eyebrow">Cardapio online</p>
             <h1>{store.name}</h1>
             <p>{store.description}</p>
           </div>
@@ -134,7 +201,7 @@ export function PublicStorefront() {
                   {
                     "--art-bg": product.artBg,
                     "--art-shape": product.artShape
-                  } as React.CSSProperties
+                  } as CSSProperties
                 }
               />
               <div className="product-body">
@@ -163,13 +230,7 @@ export function PublicStorefront() {
         </div>
 
         <aside className="cart-sticky" aria-label="Carrinho">
-          <form
-            className="checkout-panel"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (cartItems.length > 0) setSubmitted(true);
-            }}
-          >
+          <form className="checkout-panel" onSubmit={submitOrder}>
             <div className="section-head">
               <h2>Carrinho</h2>
               <span className="metric-icon" aria-hidden="true">
@@ -215,12 +276,18 @@ export function PublicStorefront() {
 
             <div className="field">
               <label htmlFor="customer-name">Nome</label>
-              <input className="input" id="customer-name" required />
+              <input className="input" id="customer-name" name="customerName" required />
             </div>
 
             <div className="field">
               <label htmlFor="customer-whatsapp">WhatsApp</label>
-              <input className="input" id="customer-whatsapp" inputMode="tel" required />
+              <input
+                className="input"
+                id="customer-whatsapp"
+                inputMode="tel"
+                name="customerWhatsapp"
+                required
+              />
             </div>
 
             <div className="grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
@@ -244,8 +311,13 @@ export function PublicStorefront() {
 
             {fulfillment === "Entrega" ? (
               <div className="field">
-                <label htmlFor="address">Endereço</label>
-                <input className="input" id="address" required />
+                <label htmlFor="address">Endereco</label>
+                <input
+                  className="input"
+                  id="address"
+                  name="deliveryAddress"
+                  required
+                />
               </div>
             ) : null}
 
@@ -266,6 +338,7 @@ export function PublicStorefront() {
                 <input
                   className="input"
                   id="delivery-date"
+                  name="deliveryDate"
                   required
                   style={{ paddingLeft: "2.25rem" }}
                   type="date"
@@ -274,11 +347,12 @@ export function PublicStorefront() {
             </div>
 
             <div className="field">
-              <label htmlFor="notes">Observações</label>
+              <label htmlFor="notes">Observacoes</label>
               <textarea
                 className="textarea"
                 id="notes"
-                placeholder="Tema, restrições, mensagem no bolo..."
+                name="customerNotes"
+                placeholder="Tema, restricoes, mensagem no bolo..."
               />
             </div>
 
@@ -287,9 +361,15 @@ export function PublicStorefront() {
               <span>{formatCurrency(total)}</span>
             </div>
 
-            <button className="btn btn-rose" disabled={cartItems.length === 0} type="submit">
+            {formError ? <p className="form-error">{formError}</p> : null}
+
+            <button
+              className="btn btn-rose"
+              disabled={cartItems.length === 0 || isSubmitting}
+              type="submit"
+            >
               <Send aria-hidden="true" />
-              Enviar pedido
+              {isSubmitting ? "Enviando..." : "Enviar pedido"}
             </button>
           </form>
         </aside>

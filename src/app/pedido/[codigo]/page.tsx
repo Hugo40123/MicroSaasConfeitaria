@@ -9,7 +9,16 @@ export default async function TrackingPage({
   params: Promise<{ codigo: string }>;
 }) {
   const { codigo } = await params;
-  const order = orders.find((item) => item.code === codigo) ?? orders[0];
+  const order =
+    orders.find((item) => item.code === codigo) ?? {
+      ...orders[0],
+      code: codigo,
+      customer: "Cliente",
+      items: ["Pedido enviado pelo portal"],
+      status: "aguardando_confirmacao" as const,
+      total: 0,
+      paidSignal: 0
+    };
 
   return (
     <main className="storefront">
