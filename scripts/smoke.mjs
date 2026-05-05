@@ -3,6 +3,7 @@ const adminEmail = process.env.SMOKE_ADMIN_EMAIL || "admin@demo.local";
 const adminPassword = process.env.SMOKE_ADMIN_PASSWORD || "12345678";
 const attendantEmail = process.env.SMOKE_ATTENDANT_EMAIL || "atendente@demo.local";
 const attendantPassword = process.env.SMOKE_ATTENDANT_PASSWORD || "12345678";
+const shouldCreateOrder = process.env.SMOKE_CREATE_ORDER === "true";
 
 function assert(condition, message) {
   if (!condition) {
@@ -64,6 +65,45 @@ async function expectOk(path, cookie, label, options = {}) {
   return text;
 }
 
+function tomorrowDate() {
+  const date = new Date();
+  date.setDate(date.getDate() + 1);
+
+  return date.toISOString().slice(0, 10);
+}
+
+async function createPortalOrder() {
+  const { response, text } = await request("/api/orders", {
+    method: "POST",
+    body: JSON.stringify({
+      storeSlug: "doce-maria",
+      customerName: "Cliente Smoke",
+      customerWhatsapp: "11999990000",
+      fulfillment: "Retirada",
+      deliveryDate: tomorrowDate(),
+      deliveryTime: "10:30",
+      paymentMethod: "PIX",
+      customerNotes: "Pedido criado pelo smoke test.",
+      items: [
+        {
+          productId: "p2",
+          quantity: 1
+        }
+      ]
+    })
+  });
+
+  assert(response.status === 201, `Criacao de pedido falhou: ${response.status} ${text}`);
+
+  const result = JSON.parse(text);
+  const code = result.data?.code;
+  assert(code, "API de pedido nao retornou codigo.");
+
+  await expectOk(`/pedido/${code}`, "", "Acompanhamento do pedido criado");
+
+  return code;
+}
+
 async function main() {
   console.log(`Smoke test em ${baseUrl}`);
 
@@ -75,10 +115,18 @@ async function main() {
   await expectOk("/login", "", "Login page");
   await expectOk("/loja/doce-maria", "", "Portal publico");
 
+  const createdOrderCode = shouldCreateOrder ? await createPortalOrder() : null;
+
   const adminCookie = await login(adminEmail, adminPassword);
   await expectOk("/app", adminCookie, "Resumo admin");
   await expectOk("/app/produtos", adminCookie, "Produtos admin");
-  await expectOk("/app/pedidos", adminCookie, "Pedidos admin");
+  const ordersText = await expectOk("/app/pedidos", adminCookie, "Pedidos admin");
+  if (createdOrderCode) {
+    assert(
+      ordersText.includes(createdOrderCode),
+      "Pedido criado pelo smoke nao apareceu no painel de pedidos."
+    );
+  }
   await expectOk("/app/configuracoes", adminCookie, "Configuracoes admin");
 
   const attendantCookie = await login(attendantEmail, attendantPassword);
