@@ -7,7 +7,8 @@ Este guia descreve como publicar o MVP com PostgreSQL remoto.
 Configure no provedor de deploy:
 
 ```env
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
+DATABASE_URL="postgresql://postgres.PROJECT_REF:YOUR_PASSWORD@aws-1-sa-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.PROJECT_REF:YOUR_PASSWORD@aws-1-sa-east-1.pooler.supabase.com:5432/postgres"
 NEXT_PUBLIC_APP_URL="https://seu-dominio.com"
 UPLOAD_STORAGE_DRIVER="supabase"
 SUPABASE_URL="https://seu-projeto.supabase.co"
@@ -17,6 +18,10 @@ SUPABASE_STORAGE_BUCKET="product-images"
 
 Use uma `DATABASE_URL` real. O placeholder `postgresql://user:password@localhost:5432`
 ativa o modo mock e nao deve ser usado em producao.
+
+Observacao: o projeto usa Prisma 7. Por isso, `prisma/schema.prisma` mantem
+apenas `provider = "postgresql"` e `prisma.config.ts` usa `DIRECT_URL` para CLI
+e migrations. O runtime da aplicacao usa `DATABASE_URL` via adapter PostgreSQL.
 
 ## Banco
 
@@ -58,6 +63,12 @@ Depois de publicar, rode o smoke test apontando para a URL final:
 SMOKE_BASE_URL=https://seu-dominio.com npm run smoke
 ```
 
+Se estiver usando os usuarios criados pelo seed:
+
+```bash
+SMOKE_BASE_URL=https://seu-dominio.com SMOKE_ADMIN_EMAIL=admin@docemaria.local SMOKE_ADMIN_PASSWORD=admin123 SMOKE_ATTENDANT_EMAIL=atendente@docemaria.local SMOKE_ATTENDANT_PASSWORD=atendente123 npm run smoke
+```
+
 O endpoint `/api/health` retorna:
 
 - `200` quando banco e storage estao prontos.
@@ -80,6 +91,7 @@ Para Supabase Storage:
 ## Checklist
 
 - `DATABASE_URL` aponta para PostgreSQL remoto.
+- `DIRECT_URL` aponta para conexao direta usada em migrations.
 - `NEXT_PUBLIC_APP_URL` aponta para o dominio final.
 - `UPLOAD_STORAGE_DRIVER` aponta para `supabase` em deploy serverless.
 - Migrations foram aplicadas com `npm run prisma:deploy`.

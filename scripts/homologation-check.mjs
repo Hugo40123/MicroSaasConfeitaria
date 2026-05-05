@@ -1,5 +1,8 @@
+import "dotenv/config";
+
 const required = [
   "DATABASE_URL",
+  "DIRECT_URL",
   "NEXT_PUBLIC_APP_URL",
   "UPLOAD_STORAGE_DRIVER"
 ];
@@ -7,6 +10,9 @@ const required = [
 function isPlaceholder(name, value) {
   if (!value) return true;
   if (name === "DATABASE_URL") {
+    return value.includes("USER:PASSWORD") || value.startsWith("postgresql://user:password@localhost:5432");
+  }
+  if (name === "DIRECT_URL") {
     return value.includes("USER:PASSWORD") || value.startsWith("postgresql://user:password@localhost:5432");
   }
   if (name === "NEXT_PUBLIC_APP_URL") {

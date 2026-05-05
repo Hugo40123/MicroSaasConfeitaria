@@ -1,4 +1,8 @@
 const baseUrl = (process.env.SMOKE_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
+const adminEmail = process.env.SMOKE_ADMIN_EMAIL || "admin@demo.local";
+const adminPassword = process.env.SMOKE_ADMIN_PASSWORD || "12345678";
+const attendantEmail = process.env.SMOKE_ATTENDANT_EMAIL || "atendente@demo.local";
+const attendantPassword = process.env.SMOKE_ATTENDANT_PASSWORD || "12345678";
 
 function assert(condition, message) {
   if (!condition) {
@@ -34,12 +38,12 @@ async function request(path, options = {}) {
   };
 }
 
-async function login(email) {
+async function login(email, password) {
   const { response, text } = await request("/api/auth/login", {
     method: "POST",
     body: JSON.stringify({
       email,
-      password: "12345678"
+      password
     })
   });
 
@@ -71,13 +75,13 @@ async function main() {
   await expectOk("/login", "", "Login page");
   await expectOk("/loja/doce-maria", "", "Portal publico");
 
-  const adminCookie = await login("admin@demo.local");
+  const adminCookie = await login(adminEmail, adminPassword);
   await expectOk("/app", adminCookie, "Resumo admin");
   await expectOk("/app/produtos", adminCookie, "Produtos admin");
   await expectOk("/app/pedidos", adminCookie, "Pedidos admin");
   await expectOk("/app/configuracoes", adminCookie, "Configuracoes admin");
 
-  const attendantCookie = await login("atendente@demo.local");
+  const attendantCookie = await login(attendantEmail, attendantPassword);
   await expectOk("/app/pedidos", attendantCookie, "Pedidos atendente");
   const forbiddenText = await expectOk("/app/produtos", attendantCookie, "Produtos atendente", {
     redirect: "follow"

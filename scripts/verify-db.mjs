@@ -10,9 +10,16 @@ if (!databaseUrl || databaseUrl.startsWith(placeholderUrl)) {
   process.exit(1);
 }
 
+function getPgAdapterConnectionString(value) {
+  const url = new URL(value);
+  url.searchParams.delete("pgbouncer");
+
+  return url.toString();
+}
+
 const prisma = new PrismaClient({
   adapter: new PrismaPg({
-    connectionString: databaseUrl
+    connectionString: getPgAdapterConnectionString(databaseUrl)
   })
 });
 

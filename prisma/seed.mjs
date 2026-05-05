@@ -17,9 +17,16 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL precisa estar configurada para rodar o seed.");
 }
 
+function getPgAdapterConnectionString(value) {
+  const url = new URL(value);
+  url.searchParams.delete("pgbouncer");
+
+  return url.toString();
+}
+
 const prisma = new PrismaClient({
   adapter: new PrismaPg({
-    connectionString: process.env.DATABASE_URL
+    connectionString: getPgAdapterConnectionString(process.env.DATABASE_URL)
   })
 });
 

@@ -17,6 +17,13 @@ export function isDatabaseConfigured() {
   return Boolean(databaseUrl && !databaseUrl.startsWith(placeholderUrl));
 }
 
+export function getPgAdapterConnectionString(databaseUrl: string) {
+  const url = new URL(databaseUrl);
+  url.searchParams.delete("pgbouncer");
+
+  return url.toString();
+}
+
 export function getPrismaClient() {
   const databaseUrl = getDatabaseUrl();
 
@@ -25,7 +32,9 @@ export function getPrismaClient() {
   }
 
   if (!globalForPrisma.prisma) {
-    const adapter = new PrismaPg({ connectionString: databaseUrl });
+    const adapter = new PrismaPg({
+      connectionString: getPgAdapterConnectionString(databaseUrl)
+    });
     globalForPrisma.prisma = new PrismaClient({ adapter });
   }
 

@@ -71,6 +71,12 @@ Para testar outra URL:
 SMOKE_BASE_URL=https://seu-dominio.com npm run smoke
 ```
 
+Com banco real e usuarios do seed:
+
+```bash
+SMOKE_ADMIN_EMAIL=admin@docemaria.local SMOKE_ADMIN_PASSWORD=admin123 SMOKE_ATTENDANT_EMAIL=atendente@docemaria.local SMOKE_ATTENDANT_PASSWORD=atendente123 npm run smoke
+```
+
 ## Rotas importantes
 
 - `/app`: painel da loja
