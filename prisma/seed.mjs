@@ -133,6 +133,8 @@ const products = [
     category: "WHOLE_CAKE",
     description: "Massa branca, recheio de leite ninho e morangos frescos.",
     basePrice: 128,
+    cost: 54,
+    marginPercent: 58,
     preparationHours: 48,
     availableOnline: true
   },
@@ -142,6 +144,8 @@ const products = [
     category: "CAKE_SLICE",
     description: "Fatia alta com ganache cremosa e massa de cacau.",
     basePrice: 16,
+    cost: 6.5,
+    marginPercent: 55,
     preparationHours: 0,
     availableOnline: true
   },
@@ -151,6 +155,8 @@ const products = [
     category: "SWEET",
     description: "Caixinha com 12 unidades de brigadeiro tradicional.",
     basePrice: 38,
+    cost: 14,
+    marginPercent: 60,
     preparationHours: 24,
     availableOnline: true
   },
@@ -160,6 +166,8 @@ const products = [
     category: "EXTRA",
     description: "Topper simples para tema, nome ou idade.",
     basePrice: 24,
+    cost: 7,
+    marginPercent: 55,
     preparationHours: 24,
     availableOnline: true
   },
@@ -169,6 +177,8 @@ const products = [
     category: "WHOLE_CAKE",
     description: "Massa vermelha, cream cheese suave e decoracao minimalista.",
     basePrice: 145,
+    cost: 62,
+    marginPercent: 58,
     preparationHours: 72,
     availableOnline: true
   },
@@ -178,6 +188,8 @@ const products = [
     category: "SWEET",
     description: "Caixinha com 15 unidades de beijinho com coco fresco.",
     basePrice: 42,
+    cost: 16,
+    marginPercent: 60,
     preparationHours: 24,
     availableOnline: false
   }
@@ -194,6 +206,8 @@ for (const product of products) {
       category: product.category,
       description: product.description,
       basePrice: product.basePrice,
+      cost: product.cost,
+      marginPercent: product.marginPercent,
       preparationHours: product.preparationHours,
       active: true,
       availableOnline: product.availableOnline
@@ -205,12 +219,105 @@ for (const product of products) {
       category: product.category,
       description: product.description,
       basePrice: product.basePrice,
+      cost: product.cost,
+      marginPercent: product.marginPercent,
       preparationHours: product.preparationHours,
       active: true,
       availableOnline: product.availableOnline
     }
   });
 }
+
+const ingredients = [
+  {
+    id: "ing-chocolate",
+    name: "Chocolate meio amargo",
+    unit: "g",
+    costPerUnit: 0.08,
+    stockQuantity: 3000,
+    lowStockAlert: 500
+  },
+  {
+    id: "ing-creme-leite",
+    name: "Creme de leite",
+    unit: "g",
+    costPerUnit: 0.025,
+    stockQuantity: 2000,
+    lowStockAlert: 400
+  }
+];
+
+for (const ingredient of ingredients) {
+  await prisma.ingredient.upsert({
+    where: {
+      id: ingredient.id
+    },
+    update: {
+      storeId: store.id,
+      name: ingredient.name,
+      unit: ingredient.unit,
+      costPerUnit: ingredient.costPerUnit,
+      stockQuantity: ingredient.stockQuantity,
+      lowStockAlert: ingredient.lowStockAlert
+    },
+    create: {
+      id: ingredient.id,
+      storeId: store.id,
+      name: ingredient.name,
+      unit: ingredient.unit,
+      costPerUnit: ingredient.costPerUnit,
+      stockQuantity: ingredient.stockQuantity,
+      lowStockAlert: ingredient.lowStockAlert
+    }
+  });
+}
+
+const recipeItems = [
+  {
+    id: "recipe-p2-chocolate",
+    productId: "p2",
+    ingredientId: "ing-chocolate",
+    quantity: 90
+  },
+  {
+    id: "recipe-p2-creme-leite",
+    productId: "p2",
+    ingredientId: "ing-creme-leite",
+    quantity: 40
+  }
+];
+
+for (const item of recipeItems) {
+  await prisma.productRecipeItem.upsert({
+    where: {
+      id: item.id
+    },
+    update: {
+      storeId: store.id,
+      productId: item.productId,
+      ingredientId: item.ingredientId,
+      quantity: item.quantity
+    },
+    create: {
+      id: item.id,
+      storeId: store.id,
+      productId: item.productId,
+      ingredientId: item.ingredientId,
+      quantity: item.quantity
+    }
+  });
+}
+
+const p2RecipeCost = (90 * 0.08) + (40 * 0.025);
+await prisma.product.update({
+  where: {
+    id: "p2"
+  },
+  data: {
+    costAutoCalculated: Math.round(p2RecipeCost * 100) / 100,
+    suggestedPrice: Math.round((p2RecipeCost / (1 - 55 / 100)) * 100) / 100
+  }
+});
 
 await prisma.storeSchedule.createMany({
   data: [1, 2, 3, 4, 5, 6].map((weekday) => ({

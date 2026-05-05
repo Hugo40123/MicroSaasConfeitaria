@@ -73,8 +73,10 @@ model Store {
   blockedDates        BlockedDate[]
   customers           Customer[]
   financials          FinancialTransaction[]
+  ingredients         Ingredient[]
   orders              Order[]
   products            Product[]
+  recipeItems         ProductRecipeItem[]
   schedules           StoreSchedule[]
   users               User[]
 }
@@ -132,6 +134,9 @@ model Product {
   description        String?
   basePrice          Decimal         @db.Decimal(10, 2)
   cost               Decimal?        @db.Decimal(10, 2)
+  costAutoCalculated Decimal?        @db.Decimal(10, 2)
+  marginPercent      Decimal         @default(0) @db.Decimal(5, 2)
+  suggestedPrice     Decimal?        @db.Decimal(10, 2)
   preparationHours   Int?
   active             Boolean         @default(true)
   availableOnline    Boolean         @default(true)
@@ -140,11 +145,47 @@ model Product {
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   orderItems         OrderItem[]
+  recipeItems        ProductRecipeItem[]
   store              Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@index([storeId])
   @@index([storeId, category])
   @@index([storeId, active, availableOnline])
+}
+
+model Ingredient {
+  id             String              @id @default(cuid())
+  storeId        String
+  name           String
+  unit           String
+  costPerUnit    Decimal             @db.Decimal(10, 4)
+  stockQuantity  Decimal             @default(0) @db.Decimal(12, 3)
+  lowStockAlert  Decimal?            @db.Decimal(12, 3)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  recipeItems    ProductRecipeItem[]
+  store          Store               @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId])
+  @@unique([storeId, name])
+}
+
+model ProductRecipeItem {
+  id           String     @id @default(cuid())
+  storeId      String
+  productId    String
+  ingredientId String
+  quantity     Decimal    @db.Decimal(12, 3)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  store        Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId])
+  @@index([productId])
+  @@index([ingredientId])
+  @@unique([productId, ingredientId])
 }
 
 model Order {

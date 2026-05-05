@@ -1,6 +1,7 @@
 import type { Product, ProductCategory } from "@/lib/sample-data";
 import { products as sampleProducts, store as sampleStore } from "@/lib/sample-data";
 import { getPrismaClient, isDatabaseConfigured } from "@/lib/prisma";
+import { calculateRecipeCost, calculateSuggestedPrice } from "@/lib/pricing";
 
 export type StoreProfile = typeof sampleStore & {
   themePrimary: string;
@@ -20,9 +21,22 @@ export type AdminProduct = Product & {
   dbCategory: ProductCategoryValue;
   basePrice: number;
   cost: number | null;
+  costAutoCalculated: number | null;
+  effectiveCost: number | null;
+  marginPercent: number;
+  suggestedPrice: number | null;
   preparationHours: number | null;
   minOrderNoticeDays: number | null;
   imageUrl: string;
+  recipeItems: {
+    id: string;
+    ingredientId: string;
+    ingredientName: string;
+    unit: string;
+    quantity: number;
+    costPerUnit: number;
+    totalCost: number;
+  }[];
 };
 
 export const productCategoryOptions = [
@@ -97,14 +111,52 @@ function mapDbProductToUiProduct(product: DbProduct): Product {
 }
 
 function mapDbProductToAdminProduct(product: DbProduct): AdminProduct {
+  const recipeItems = product.recipeItems.map((item) => {
+    const quantity = Number(item.quantity);
+    const costPerUnit = Number(item.ingredient.costPerUnit);
+
+    return {
+      id: item.id,
+      ingredientId: item.ingredientId,
+      ingredientName: item.ingredient.name,
+      unit: item.ingredient.unit,
+      quantity,
+      costPerUnit,
+      totalCost: quantity * costPerUnit
+    };
+  });
+  const manualCost = product.cost === null ? null : Number(product.cost);
+  const recipeCost =
+    recipeItems.length > 0
+      ? calculateRecipeCost(recipeItems.map((item) => ({
+          quantity: item.quantity,
+          costPerUnit: item.costPerUnit
+        })))
+      : null;
+  const costAutoCalculated =
+    product.costAutoCalculated === null
+      ? recipeCost
+      : Number(product.costAutoCalculated);
+  const effectiveCost = costAutoCalculated ?? manualCost;
+  const marginPercent = Number(product.marginPercent);
+  const suggestedPrice =
+    product.suggestedPrice === null
+      ? calculateSuggestedPrice(effectiveCost, marginPercent)
+      : Number(product.suggestedPrice);
+
   return {
     ...mapDbProductToUiProduct(product),
     dbCategory: product.category,
     basePrice: Number(product.basePrice),
-    cost: product.cost === null ? null : Number(product.cost),
+    cost: manualCost,
+    costAutoCalculated,
+    effectiveCost,
+    marginPercent,
+    suggestedPrice,
     preparationHours: product.preparationHours,
     minOrderNoticeDays: product.minOrderNoticeDays,
-    imageUrl: product.imageUrl ?? ""
+    imageUrl: product.imageUrl ?? "",
+    recipeItems
   };
 }
 
@@ -118,12 +170,17 @@ function mapSampleProductToAdminProduct(product: Product): AdminProduct {
     dbCategory: category?.value ?? "EXTRA",
     basePrice: product.price,
     cost: null,
+    costAutoCalculated: null,
+    effectiveCost: null,
+    marginPercent: 0,
+    suggestedPrice: null,
     preparationHours:
       product.preparationTime === "Pronta entrega"
         ? 0
         : Number(product.preparationTime.replace(/\D/g, "")) * 24 || null,
     minOrderNoticeDays: null,
-    imageUrl: ""
+    imageUrl: "",
+    recipeItems: []
   };
 }
 
@@ -160,6 +217,16 @@ async function getProductsFromDatabase(storeId: string) {
     where: {
       storeId
     },
+    include: {
+      recipeItems: {
+        include: {
+          ingredient: true
+        },
+        orderBy: {
+          createdAt: "asc"
+        }
+      }
+    },
     orderBy: {
       name: "asc"
     }
@@ -177,6 +244,13 @@ async function getOnlineProductsFromDatabase(storeSlug: string) {
         where: {
           active: true,
           availableOnline: true
+        },
+        include: {
+          recipeItems: {
+            include: {
+              ingredient: true
+            }
+          }
         },
         orderBy: {
           name: "asc"

@@ -2,6 +2,7 @@
 
 import { requirePermission } from "@/lib/current-user";
 import { getPrismaClient, isDatabaseConfigured } from "@/lib/prisma";
+import { recalculateProductPricing } from "@/lib/pricing";
 import type { ProductCategoryValue } from "@/lib/product-repository";
 import { saveProductImage } from "@/lib/upload-storage";
 import { revalidatePath } from "next/cache";
@@ -51,6 +52,18 @@ function parseOptionalMoney(formData: FormData, field: string, label: string) {
   return Math.round(value * 100) / 100;
 }
 
+function parseMarginPercent(formData: FormData) {
+  const rawValue = getString(formData, "marginPercent");
+  if (!rawValue) return 0;
+
+  const value = Number(rawValue.replace(",", "."));
+  if (!Number.isFinite(value) || value < 0 || value >= 100) {
+    throw new Error("Margem precisa ficar entre 0 e 99,99%.");
+  }
+
+  return Math.round(value * 100) / 100;
+}
+
 function parseOptionalInt(formData: FormData, field: string, label: string) {
   const rawValue = getString(formData, field);
   if (!rawValue) return null;
@@ -90,6 +103,7 @@ async function parseProductForm(formData: FormData) {
     description: getString(formData, "description") || null,
     basePrice: parseMoney(formData, "basePrice", "Preço"),
     cost: parseOptionalMoney(formData, "cost", "Custo"),
+    marginPercent: parseMarginPercent(formData),
     preparationHours: parseOptionalInt(
       formData,
       "preparationHours",
@@ -137,12 +151,16 @@ export async function createProductAction(formData: FormData) {
     const prisma = getPrismaClient();
     const input = await parseProductForm(formData);
 
-    await prisma.product.create({
+    const product = await prisma.product.create({
       data: {
         storeId: user.storeId,
         ...input
+      },
+      select: {
+        id: true
       }
     });
+    await recalculateProductPricing(prisma, user.storeId, product.id);
 
     revalidateProductViews(user.storeSlug);
   } catch (error) {
@@ -168,6 +186,7 @@ export async function updateProductAction(formData: FormData) {
       },
       data: input
     });
+    await recalculateProductPricing(prisma, user.storeId, productId);
 
     revalidateProductViews(user.storeSlug);
   } catch (error) {

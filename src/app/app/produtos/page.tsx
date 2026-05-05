@@ -1,4 +1,14 @@
 import { requirePermission } from "@/lib/current-user";
+import {
+  addRecipeItemAction,
+  createIngredientAction,
+  removeRecipeItemAction
+} from "@/lib/ingredient-actions";
+import {
+  ingredientUnitOptions,
+  listIngredientsForCurrentStore,
+  type IngredientSummary
+} from "@/lib/ingredient-repository";
 import { ProductImageInput } from "@/components/product-image-input";
 import {
   createProductAction,
@@ -12,7 +22,17 @@ import {
   type AdminProduct
 } from "@/lib/product-repository";
 import { formatCurrency } from "@/lib/sample-data";
-import { Edit3, Eye, EyeOff, Globe2, GlobeLock, ImageUp, Plus, Search } from "lucide-react";
+import {
+  Edit3,
+  Eye,
+  EyeOff,
+  Globe2,
+  GlobeLock,
+  ImageUp,
+  Plus,
+  Search,
+  Trash2
+} from "lucide-react";
 
 function ProductForm({
   action,
@@ -75,7 +95,7 @@ function ProductForm({
         </label>
 
         <label className="field">
-          <span>Custo</span>
+        <span>Custo manual</span>
           <input
             className="input"
             defaultValue={product?.cost ?? ""}
@@ -83,6 +103,21 @@ function ProductForm({
             inputMode="decimal"
             min="0"
             name="cost"
+            step="0.01"
+            type="number"
+          />
+        </label>
+
+        <label className="field">
+          <span>Margem desejada (%)</span>
+          <input
+            className="input"
+            defaultValue={product?.marginPercent ?? 0}
+            disabled={disabled}
+            inputMode="decimal"
+            max="99.99"
+            min="0"
+            name="marginPercent"
             step="0.01"
             type="number"
           />
@@ -170,6 +205,200 @@ function ProductForm({
   );
 }
 
+function IngredientForm({ disabled }: { disabled: boolean }) {
+  return (
+    <form action={createIngredientAction} className="product-form">
+      <div className="form-grid">
+        <label className="field">
+          <span>Nome do insumo</span>
+          <input className="input" disabled={disabled} maxLength={120} name="name" required />
+        </label>
+        <label className="field">
+          <span>Unidade</span>
+          <select className="select" disabled={disabled} name="unit" required>
+            {ingredientUnitOptions.map((unit) => (
+              <option key={unit.value} value={unit.value}>
+                {unit.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span>Custo por unidade</span>
+          <input
+            className="input"
+            disabled={disabled}
+            inputMode="decimal"
+            min="0.0001"
+            name="costPerUnit"
+            required
+            step="0.0001"
+            type="number"
+          />
+        </label>
+        <label className="field">
+          <span>Estoque atual</span>
+          <input
+            className="input"
+            defaultValue={0}
+            disabled={disabled}
+            inputMode="decimal"
+            min="0"
+            name="stockQuantity"
+            step="0.001"
+            type="number"
+          />
+        </label>
+        <label className="field">
+          <span>Alerta de estoque baixo</span>
+          <input
+            className="input"
+            disabled={disabled}
+            inputMode="decimal"
+            min="0"
+            name="lowStockAlert"
+            step="0.001"
+            type="number"
+          />
+        </label>
+      </div>
+      <div className="actions">
+        <button className="btn btn-primary" disabled={disabled} type="submit">
+          <Plus aria-hidden="true" />
+          Criar insumo
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function RecipeEditor({
+  disabled,
+  ingredients,
+  product
+}: {
+  disabled: boolean;
+  ingredients: IngredientSummary[];
+  product: AdminProduct;
+}) {
+  return (
+    <div className="recipe-editor">
+      <div className="section-head">
+        <div>
+          <h3>Ficha técnica e precificação</h3>
+          <p className="muted">
+            O custo automático usa a soma de quantidade x custo do insumo. Sem ficha,
+            o sistema mantém o custo manual.
+          </p>
+        </div>
+      </div>
+
+      <div className="pricing-grid">
+        <div>
+          <span className="muted">Custo manual</span>
+          <strong>{product.cost === null ? "Não informado" : formatCurrency(product.cost)}</strong>
+        </div>
+        <div>
+          <span className="muted">Custo pela ficha</span>
+          <strong>
+            {product.costAutoCalculated === null
+              ? "Sem ficha"
+              : formatCurrency(product.costAutoCalculated)}
+          </strong>
+        </div>
+        <div>
+          <span className="muted">Custo usado</span>
+          <strong>
+            {product.effectiveCost === null
+              ? "Não informado"
+              : formatCurrency(product.effectiveCost)}
+          </strong>
+        </div>
+        <div>
+          <span className="muted">Preço sugerido</span>
+          <strong>
+            {product.suggestedPrice === null
+              ? "Informe custo e margem"
+              : formatCurrency(product.suggestedPrice)}
+          </strong>
+        </div>
+      </div>
+
+      <div className="list">
+        {product.recipeItems.map((item) => (
+          <article className="item-card" key={item.id}>
+            <div className="item-main">
+              <div>
+                <p className="item-title">{item.ingredientName}</p>
+                <p className="item-subtitle">
+                  {item.quantity} {item.unit} x {formatCurrency(item.costPerUnit)} ={" "}
+                  {formatCurrency(item.totalCost)}
+                </p>
+              </div>
+              <form action={removeRecipeItemAction}>
+                <input name="recipeItemId" type="hidden" value={item.id} />
+                <button
+                  className="icon-btn"
+                  disabled={disabled}
+                  title="Remover insumo da ficha"
+                  type="submit"
+                >
+                  <Trash2 aria-hidden="true" />
+                </button>
+              </form>
+            </div>
+          </article>
+        ))}
+        {product.recipeItems.length === 0 ? (
+          <p className="muted">Nenhum insumo vinculado a este produto.</p>
+        ) : null}
+      </div>
+
+      <form action={addRecipeItemAction} className="product-form">
+        <input name="productId" type="hidden" value={product.id} />
+        <div className="form-grid">
+          <label className="field">
+            <span>Insumo</span>
+            <select
+              className="select"
+              disabled={disabled || ingredients.length === 0}
+              name="ingredientId"
+              required
+            >
+              <option value="">Selecione</option>
+              {ingredients.map((ingredient) => (
+                <option key={ingredient.id} value={ingredient.id}>
+                  {ingredient.name} - {formatCurrency(ingredient.costPerUnit)} /{" "}
+                  {ingredient.unit}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
+            <span>Quantidade na receita</span>
+            <input
+              className="input"
+              disabled={disabled || ingredients.length === 0}
+              inputMode="decimal"
+              min="0.001"
+              name="quantity"
+              required
+              step="0.001"
+              type="number"
+            />
+          </label>
+        </div>
+        <div className="actions">
+          <button className="btn btn-secondary" disabled={disabled || ingredients.length === 0} type="submit">
+            <Plus aria-hidden="true" />
+            Vincular insumo
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 export default async function ProductsPage({
   searchParams
 }: {
@@ -181,7 +410,9 @@ export default async function ProductsPage({
   const user = await requirePermission("manage_products");
   const params = await searchParams;
   const productsResult = await listProductsForCurrentStore(user.storeId);
+  const ingredientsResult = await listIngredientsForCurrentStore(user.storeId);
   const products = productsResult.data;
+  const ingredients = ingredientsResult.data;
   const isMock = productsResult.source === "mock";
 
   return (
@@ -237,6 +468,17 @@ export default async function ProductsPage({
             disabled={isMock}
             submitLabel="Criar produto"
           />
+        </details>
+
+        <details className="product-editor">
+          <summary>
+            <span>
+              <strong>Novo insumo</strong>
+              <small>Cadastre unidade, custo e estoque para usar nas fichas técnicas.</small>
+            </span>
+            <Plus aria-hidden="true" />
+          </summary>
+          <IngredientForm disabled={isMock} />
         </details>
 
         <div className="search-row">
@@ -307,6 +549,15 @@ export default async function ProductsPage({
                     ) : null}
                     <strong>{product.name}</strong>
                     <p className="muted">{product.description}</p>
+                    <p className="muted">
+                      Custo usado:{" "}
+                      {product.effectiveCost === null
+                        ? "não informado"
+                        : formatCurrency(product.effectiveCost)}
+                      {product.suggestedPrice === null
+                        ? ""
+                        : ` · sugerido ${formatCurrency(product.suggestedPrice)}`}
+                    </p>
                   </td>
                   <td data-label="Categoria">{product.category}</td>
                   <td data-label="Preço">
@@ -401,6 +652,7 @@ export default async function ProductsPage({
                 product={product}
                 submitLabel="Salvar alterações"
               />
+              <RecipeEditor disabled={isMock} ingredients={ingredients} product={product} />
             </details>
           ))}
         </div>
