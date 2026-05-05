@@ -245,11 +245,11 @@ export function PublicStorefront({
       className="storefront"
       style={
         {
-          "--store-primary": store.themePrimary,
-          "--store-primary-strong": store.themePrimaryStrong,
-          "--store-accent": store.themeAccent,
-          "--store-bg": store.themeBackground,
-          "--store-soft": store.themeSoft
+          "--store-primary": "#d79771",
+          "--store-primary-strong": "#734939",
+          "--store-accent": "#f7b239",
+          "--store-bg": "#fff6e8",
+          "--store-soft": "#fff0da"
         } as CSSProperties
       }
     >
