@@ -1,8 +1,11 @@
 import { MetricCard } from "@/components/metric-card";
+import { requirePermission } from "@/lib/current-user";
 import { formatCurrency, orders, products } from "@/lib/sample-data";
 import { BarChart3, CalendarDays, Package, PieChart } from "lucide-react";
 
-export default function ReportsPage() {
+export default async function ReportsPage() {
+  await requirePermission("view_reports");
+
   const revenue = orders.reduce((sum, order) => sum + order.total, 0);
   const pending = orders.filter(
     (order) => order.status === "aguardando_confirmacao"

@@ -61,7 +61,7 @@ Para detalhes de banco local, banco remoto e deploy de migrations, consulte `doc
 
 ## Proxima etapa
 
-Adicionar permissoes de Admin e Atendente para separar operacao e configuracoes.
+Configurar upload de imagens de produtos.
 
 ## Resumo leigo das funcoes atuais
 
@@ -75,6 +75,20 @@ Adicionar permissoes de Admin e Atendente para separar operacao e configuracoes.
 - O painel de produtos ja permite criar, editar, ativar/desativar e controlar visibilidade no portal quando houver PostgreSQL real.
 - O painel de pedidos ja permite confirmar, avancar, cancelar e corrigir status quando houver PostgreSQL real.
 - A pagina publica de acompanhamento reflete o status real do pedido.
+- Usuarios `ADMIN` acessam produtos, financeiro, relatorios e configuracoes.
+- Usuarios `ATTENDANT` acessam operacao diaria: resumo, pedidos, agenda, clientes e portal.
+
+## Acessos de desenvolvimento
+
+Sem PostgreSQL real, o fallback aceita qualquer senha. Use:
+
+- Admin mock: `admin@demo.local`
+- Atendente mock: `atendente@demo.local`
+
+Com PostgreSQL real e `npm run db:seed`, use:
+
+- Admin: `admin@docemaria.local` / `admin123`
+- Atendente: `atendente@docemaria.local` / `atendente123`
 
 ## Versionamento
 

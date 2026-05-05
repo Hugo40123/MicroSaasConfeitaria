@@ -1,6 +1,17 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { randomBytes, scrypt as scryptCallback } from "crypto";
+import { promisify } from "util";
+
+const scrypt = promisify(scryptCallback);
+
+async function hashPassword(password) {
+  const salt = randomBytes(16).toString("hex");
+  const derivedKey = await scrypt(password, salt, 64);
+
+  return `${salt}:${Buffer.from(derivedKey).toString("hex")}`;
+}
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL precisa estar configurada para rodar o seed.");
@@ -34,6 +45,47 @@ const store = await prisma.store.upsert({
     onlineOrdersEnabled: true,
     pickupEnabled: true,
     deliveryEnabled: true
+  }
+});
+
+const adminPasswordHash = await hashPassword("admin123");
+const attendantPasswordHash = await hashPassword("atendente123");
+
+await prisma.user.upsert({
+  where: {
+    email: "admin@docemaria.local"
+  },
+  update: {
+    storeId: store.id,
+    name: "Admin Doce Maria",
+    passwordHash: adminPasswordHash,
+    role: "ADMIN"
+  },
+  create: {
+    storeId: store.id,
+    name: "Admin Doce Maria",
+    email: "admin@docemaria.local",
+    passwordHash: adminPasswordHash,
+    role: "ADMIN"
+  }
+});
+
+await prisma.user.upsert({
+  where: {
+    email: "atendente@docemaria.local"
+  },
+  update: {
+    storeId: store.id,
+    name: "Atendente Doce Maria",
+    passwordHash: attendantPasswordHash,
+    role: "ATTENDANT"
+  },
+  create: {
+    storeId: store.id,
+    name: "Atendente Doce Maria",
+    email: "atendente@docemaria.local",
+    passwordHash: attendantPasswordHash,
+    role: "ATTENDANT"
   }
 });
 

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuthUser } from "@/lib/current-user";
+import { requirePermission } from "@/lib/current-user";
 import { getPrismaClient, isDatabaseConfigured } from "@/lib/prisma";
 import type { ProductCategoryValue } from "@/lib/product-repository";
 import { revalidatePath } from "next/cache";
@@ -109,7 +109,7 @@ function revalidateProductViews(storeSlug: string) {
 export async function createProductAction(formData: FormData) {
   ensureDatabaseConfigured();
 
-  const user = await requireAuthUser();
+  const user = await requirePermission("manage_products");
   const prisma = getPrismaClient();
   const input = parseProductForm(formData);
 
@@ -126,7 +126,7 @@ export async function createProductAction(formData: FormData) {
 export async function updateProductAction(formData: FormData) {
   ensureDatabaseConfigured();
 
-  const user = await requireAuthUser();
+  const user = await requirePermission("manage_products");
   const prisma = getPrismaClient();
   const productId = parseRequiredString(formData, "productId", "Produto");
   const input = parseProductForm(formData);
@@ -145,7 +145,7 @@ export async function updateProductAction(formData: FormData) {
 export async function toggleProductActiveAction(formData: FormData) {
   ensureDatabaseConfigured();
 
-  const user = await requireAuthUser();
+  const user = await requirePermission("manage_products");
   const prisma = getPrismaClient();
   const productId = parseRequiredString(formData, "productId", "Produto");
   const active = getString(formData, "active") === "true";
@@ -166,7 +166,7 @@ export async function toggleProductActiveAction(formData: FormData) {
 export async function toggleProductOnlineAction(formData: FormData) {
   ensureDatabaseConfigured();
 
-  const user = await requireAuthUser();
+  const user = await requirePermission("manage_products");
   const prisma = getPrismaClient();
   const productId = parseRequiredString(formData, "productId", "Produto");
   const availableOnline = getString(formData, "availableOnline") === "true";

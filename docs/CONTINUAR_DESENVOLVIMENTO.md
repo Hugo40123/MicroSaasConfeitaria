@@ -99,14 +99,18 @@ A autenticacao tambem usa fallback:
 - A gestao de status de pedidos usa Server Actions e sempre confirma `storeId` antes de alterar um pedido.
 - Sem PostgreSQL real, a tela de pedidos continua mostrando dados de exemplo, mas desabilita alteracao de status.
 - A pagina publica `/pedido/[codigo]` mostra uma timeline baseada no status real do pedido.
+- Permissoes:
+  - `ADMIN`: acesso completo a produtos, financeiro, relatorios e configuracoes.
+  - `ATTENDANT`: acesso operacional a resumo, pedidos, agenda, clientes e portal.
+- Sem PostgreSQL real, use `admin@demo.local` ou `atendente@demo.local` com qualquer senha para testar os papeis.
+- Com seed em PostgreSQL real, use `admin@docemaria.local` / `admin123` e `atendente@docemaria.local` / `atendente123`.
 
 ## Proximas etapas tecnicas
 
 1. Conectar o PostgreSQL local/remoto seguindo `docs/BANCO_DE_DADOS.md`.
 2. Rodar migrations e seed.
-3. Adicionar permissoes de Admin e Atendente.
-4. Configurar upload de imagens de produtos.
-5. Criar integracao com WhatsApp e geracao de recibo.
+3. Configurar upload de imagens de produtos.
+4. Criar integracao com WhatsApp e geracao de recibo.
 
 ## Backup remoto
 

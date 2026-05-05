@@ -1,9 +1,9 @@
-import { requireAuthUser } from "@/lib/current-user";
+import { requirePermission } from "@/lib/current-user";
 import { store } from "@/lib/sample-data";
 import { Save, Store, ToggleLeft } from "lucide-react";
 
 export default async function SettingsPage() {
-  const user = await requireAuthUser();
+  const user = await requirePermission("manage_settings");
 
   return (
     <>

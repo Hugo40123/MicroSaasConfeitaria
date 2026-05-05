@@ -1,6 +1,7 @@
 "use client";
 
 import type { AuthUser } from "@/lib/auth";
+import { type AppPermission, userCan } from "@/lib/permissions";
 import clsx from "clsx";
 import {
   BarChart3,
@@ -18,15 +19,22 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
-const baseNavItems = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: typeof Home;
+  permission?: AppPermission;
+};
+
+const baseNavItems: NavItem[] = [
   { href: "/app", label: "Resumo", icon: Home },
   { href: "/app/pedidos", label: "Pedidos", icon: ClipboardList },
   { href: "/app/agenda", label: "Agenda", icon: CalendarDays },
-  { href: "/app/produtos", label: "Produtos", icon: Package },
+  { href: "/app/produtos", label: "Produtos", icon: Package, permission: "manage_products" },
   { href: "/app/clientes", label: "Clientes", icon: Users },
-  { href: "/app/financeiro", label: "Financeiro", icon: WalletCards },
-  { href: "/app/relatorios", label: "Relatorios", icon: BarChart3 },
-  { href: "/app/configuracoes", label: "Ajustes", icon: Settings }
+  { href: "/app/financeiro", label: "Financeiro", icon: WalletCards, permission: "view_finance" },
+  { href: "/app/relatorios", label: "Relatorios", icon: BarChart3, permission: "view_reports" },
+  { href: "/app/configuracoes", label: "Ajustes", icon: Settings, permission: "manage_settings" }
 ];
 
 export function AppShell({
@@ -50,7 +58,8 @@ export function AppShell({
     ...baseNavItems.slice(0, 4),
     { href: portalHref, label: "Portal", icon: Store },
     ...baseNavItems.slice(4)
-  ];
+  ].filter((item) => !item.permission || userCan(user, item.permission));
+  const roleLabel = user.role === "ADMIN" ? "Administrador" : "Atendente";
 
   async function logout() {
     setLoggingOut(true);
@@ -101,7 +110,7 @@ export function AppShell({
             <span className="user-avatar">{user.name.slice(0, 1).toUpperCase()}</span>
             <span>
               <strong>{user.storeName}</strong>
-              <span>{user.name}</span>
+              <span>{user.name} - {roleLabel}</span>
             </span>
           </div>
           <button

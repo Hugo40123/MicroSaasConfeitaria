@@ -1,4 +1,5 @@
 import { MetricCard } from "@/components/metric-card";
+import { requirePermission } from "@/lib/current-user";
 import { formatCurrency, orders } from "@/lib/sample-data";
 import { ArrowDownCircle, ArrowUpCircle, Plus, WalletCards } from "lucide-react";
 
@@ -8,7 +9,9 @@ const expenses = [
   { date: "Ontem", description: "Entrega por aplicativo", value: 18 }
 ];
 
-export default function FinancePage() {
+export default async function FinancePage() {
+  await requirePermission("view_finance");
+
   const entries = orders.reduce((sum, order) => sum + order.paidSignal, 0);
   const exits = expenses.reduce((sum, expense) => sum + expense.value, 0);
   const balance = entries - exits;

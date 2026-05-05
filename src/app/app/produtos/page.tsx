@@ -1,4 +1,4 @@
-import { requireAuthUser } from "@/lib/current-user";
+import { requirePermission } from "@/lib/current-user";
 import {
   createProductAction,
   toggleProductActiveAction,
@@ -168,7 +168,7 @@ function ProductForm({
 }
 
 export default async function ProductsPage() {
-  const user = await requireAuthUser();
+  const user = await requirePermission("manage_products");
   const productsResult = await listProductsForCurrentStore(user.storeId);
   const products = productsResult.data;
   const isMock = productsResult.source === "mock";

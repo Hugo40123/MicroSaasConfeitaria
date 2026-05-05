@@ -735,6 +735,13 @@ th {
   line-height: 1.45;
 }
 
+.empty-state {
+  display: grid;
+  gap: 1rem;
+  max-width: 720px;
+  margin: 3rem auto;
+}
+
 .product-editor {
   display: grid;
   gap: 0.85rem;

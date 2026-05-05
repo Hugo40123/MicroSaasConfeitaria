@@ -14,15 +14,40 @@ export type AuthResult = {
   source: "database" | "mock";
 };
 
+const globalForMockAuth = globalThis as unknown as {
+  mockSessions?: Map<string, AuthUser>;
+};
+
+function getMockSessions() {
+  if (!globalForMockAuth.mockSessions) {
+    globalForMockAuth.mockSessions = new Map();
+  }
+
+  return globalForMockAuth.mockSessions;
+}
+
 function makeMockUser(email: string, name = "Admin Demo", storeName = "Doce Maria"): AuthUser {
+  const isAttendant = email.toLowerCase().includes("atendente");
+
   return {
     id: "mock-user",
-    name,
+    name: isAttendant ? "Atendente Demo" : name,
     email,
-    role: "ADMIN",
+    role: isAttendant ? "ATTENDANT" : "ADMIN",
     storeId: "mock-store",
     storeSlug: "doce-maria",
     storeName
+  };
+}
+
+function createMockAuthResult(user: AuthUser): AuthResult {
+  const token = createSessionToken();
+  getMockSessions().set(token, user);
+
+  return {
+    user,
+    token,
+    source: "mock"
   };
 }
 
@@ -56,11 +81,7 @@ export async function registerStoreOwner(input: {
   password: string;
 }): Promise<AuthResult> {
   if (!isDatabaseConfigured()) {
-    return {
-      user: makeMockUser(input.email, input.name, input.storeName),
-      token: createSessionToken(),
-      source: "mock"
-    };
+    return createMockAuthResult(makeMockUser(input.email, input.name, input.storeName));
   }
 
   const prisma = getPrismaClient();
@@ -115,11 +136,7 @@ export async function loginStoreUser(input: {
   password: string;
 }): Promise<AuthResult | null> {
   if (!isDatabaseConfigured()) {
-    return {
-      user: makeMockUser(input.email),
-      token: createSessionToken(),
-      source: "mock"
-    };
+    return createMockAuthResult(makeMockUser(input.email));
   }
 
   const prisma = getPrismaClient();
@@ -158,7 +175,7 @@ export async function getCurrentAuthUser(token: string | undefined) {
   if (!token) return null;
 
   if (!isDatabaseConfigured()) {
-    return makeMockUser("admin@demo.local");
+    return getMockSessions().get(token) ?? null;
   }
 
   const prisma = getPrismaClient();
@@ -191,7 +208,12 @@ export async function getCurrentAuthUser(token: string | undefined) {
 }
 
 export async function logoutSession(token: string | undefined) {
-  if (!token || !isDatabaseConfigured()) return;
+  if (!token) return;
+
+  if (!isDatabaseConfigured()) {
+    getMockSessions().delete(token);
+    return;
+  }
 
   const prisma = getPrismaClient();
 
