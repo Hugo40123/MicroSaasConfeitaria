@@ -132,6 +132,35 @@ export default async function SettingsPage() {
             </label>
           </div>
         </section>
+
+        <section className="panel">
+          <div className="section-head">
+            <h2>Tema do portal</h2>
+            <Store aria-hidden="true" />
+          </div>
+          <div className="form-grid">
+            <label className="field">
+              <span>Cor principal</span>
+              <input className="input" defaultValue={settings.themePrimary} disabled={isMock} name="themePrimary" type="color" />
+            </label>
+            <label className="field">
+              <span>Texto forte</span>
+              <input className="input" defaultValue={settings.themePrimaryStrong} disabled={isMock} name="themePrimaryStrong" type="color" />
+            </label>
+            <label className="field">
+              <span>Destaque</span>
+              <input className="input" defaultValue={settings.themeAccent} disabled={isMock} name="themeAccent" type="color" />
+            </label>
+            <label className="field">
+              <span>Fundo</span>
+              <input className="input" defaultValue={settings.themeBackground} disabled={isMock} name="themeBackground" type="color" />
+            </label>
+            <label className="field">
+              <span>Fundo suave</span>
+              <input className="input" defaultValue={settings.themeSoft} disabled={isMock} name="themeSoft" type="color" />
+            </label>
+          </div>
+        </section>
       </form>
 
       <section className="split" style={{ marginTop: "1rem" }}>

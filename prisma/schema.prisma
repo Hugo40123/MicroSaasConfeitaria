@@ -59,6 +59,11 @@ model Store {
   phone               String?
   whatsapp            String?
   address             String?
+  themePrimary        String                 @default("#d79771")
+  themePrimaryStrong  String                 @default("#734939")
+  themeAccent         String                 @default("#f7b239")
+  themeBackground     String                 @default("#fff6e8")
+  themeSoft           String                 @default("#fff0da")
   onlineOrdersEnabled Boolean                @default(true)
   pickupEnabled       Boolean                @default(true)
   deliveryEnabled     Boolean                @default(false)

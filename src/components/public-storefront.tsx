@@ -29,6 +29,8 @@ type CreatedOrder = {
   trackingUrl: string;
 };
 
+type StorefrontStep = "menu" | "product" | "cart" | "checkout";
+
 const categories = ["Todos", "Bolos inteiros", "Fatias", "Doces", "Extras"] as const;
 
 export function PublicStorefront({
@@ -44,9 +46,9 @@ export function PublicStorefront({
     useState<(typeof categories)[number]>("Todos");
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [query, setQuery] = useState("");
-  const [fulfillment, setFulfillment] = useState<"Retirada" | "Entrega">(
-    "Retirada"
-  );
+  const [step, setStep] = useState<StorefrontStep>("menu");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [fulfillment, setFulfillment] = useState<"Retirada" | "Entrega">("Retirada");
   const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,6 +58,7 @@ export function PublicStorefront({
 
     return products.filter((product) => {
       if (!product.online || !product.active) return false;
+
       const matchesCategory =
         activeCategory === "Todos" || product.category === activeCategory;
       const matchesQuery =
@@ -84,6 +87,16 @@ export function PublicStorefront({
         quantity: (current[product.id]?.quantity ?? 0) + 1
       }
     }));
+  }
+
+  function addProductAndShowCart(product: Product) {
+    addProduct(product);
+    setStep("cart");
+  }
+
+  function openProduct(product: Product) {
+    setSelectedProduct(product);
+    setStep("product");
   }
 
   function removeProduct(productId: string) {
@@ -157,11 +170,31 @@ export function PublicStorefront({
         trackingUrl: result.data.trackingUrl
       });
       setCart({});
+      setStep("menu");
     } catch {
       setFormError("Nao foi possivel conectar com o servidor. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  function renderProductMedia(product: Product, className: string) {
+    if (product.imageUrl) {
+      return <img className={className} src={product.imageUrl} alt="" />;
+    }
+
+    return (
+      <div
+        aria-hidden="true"
+        className={`product-art ${className}`}
+        style={
+          {
+            "--art-bg": product.artBg,
+            "--art-shape": product.artShape
+          } as CSSProperties
+        }
+      />
+    );
   }
 
   if (createdOrder) {
@@ -172,20 +205,30 @@ export function PublicStorefront({
 
     return (
       <main className="storefront storefront-confirmation">
+        <header className="store-topbar">
+          <span className="store-mini-brand">
+            <span className="store-mini-mark">{store.name.slice(0, 1)}</span>
+            <span>{store.name}</span>
+          </span>
+          <span className="cart-pill">
+            <ShoppingCart aria-hidden="true" />
+          </span>
+        </header>
         <section className="order-confirmation">
           <span className="confirmation-icon" aria-hidden="true">
             <CheckCircle2 />
           </span>
-          <p className="eyebrow">Pedido enviado</p>
-          <h1>Seu pedido entrou para confirmacao.</h1>
+          <h1>Seu pedido foi recebido!</h1>
           <p>
-            Codigo {createdOrder.code}. A {store.name} vai revisar
-            disponibilidade, prazo e sinal antes de iniciar a producao.
+            Seu pedido foi enviado para nosso atendimento. Faremos contato direto
+            com voce.
+          </p>
+          <p>
+            ID do pedido: <strong>{createdOrder.code}</strong>
           </p>
           <div className="actions">
-            <a className="btn btn-primary" href={createdOrder.trackingUrl}>
-              <CheckCircle2 aria-hidden="true" />
-              Acompanhar pedido
+            <a className="btn btn-rose" href={createdOrder.trackingUrl}>
+              Continuar acompanhando
             </a>
             <a className="btn btn-secondary" href={whatsappHref}>
               <Send aria-hidden="true" />
@@ -202,192 +245,212 @@ export function PublicStorefront({
       className="storefront"
       style={
         {
-          "--store-primary": "#d79771",
-          "--store-primary-strong": "#734939",
-          "--store-accent": "#f7b239",
-          "--store-bg": "#fff6e8",
-          "--store-soft": "#fff0da"
+          "--store-primary": store.themePrimary,
+          "--store-primary-strong": store.themePrimaryStrong,
+          "--store-accent": store.themeAccent,
+          "--store-bg": store.themeBackground,
+          "--store-soft": store.themeSoft
         } as CSSProperties
       }
     >
       <header className="store-topbar">
-        <a className="store-mini-brand" href="#cardapio">
+        <button className="store-mini-brand" onClick={() => setStep("menu")} type="button">
           <span className="store-mini-mark">{store.name.slice(0, 1)}</span>
           <span>{store.name}</span>
-        </a>
-        <a className="cart-pill" href="#checkout">
+        </button>
+        <button className="cart-pill" onClick={() => setStep("cart")} type="button">
           <ShoppingCart aria-hidden="true" />
           <span>{cartCount} {cartCount === 1 ? "item" : "itens"}</span>
-        </a>
+        </button>
       </header>
 
-      <section className="store-hero">
-        <div className="store-banner">
-          <div className="store-banner-inner">
-            <p className="eyebrow">Cardapio online</p>
-            <h1>{store.name}</h1>
-            <p>{store.description}</p>
-            <div className="store-hero-meta">
-              <span>
-                <MapPin aria-hidden="true" />
-                {store.address || "Retirada e entrega sob combinacao"}
-              </span>
-              <span>
-                <Clock3 aria-hidden="true" />
-                Encomendas com confirmacao da loja
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {featuredProducts.length ? (
-        <section className="store-section">
-          <div className="store-section-head">
-            <div>
-              <p className="eyebrow">Destaques</p>
-              <h2>Doces em destaque</h2>
-            </div>
-          </div>
-          <div className="featured-grid">
-            {featuredProducts.map((product) => (
-              <article className="featured-card" key={`featured-${product.id}`}>
-                {product.imageUrl ? (
-                  <img className="featured-image" src={product.imageUrl} alt="" />
-                ) : (
-                  <div
-                    aria-hidden="true"
-                    className="product-art featured-art"
-                    style={
-                      {
-                        "--art-bg": product.artBg,
-                        "--art-shape": product.artShape
-                      } as CSSProperties
-                    }
-                  />
-                )}
-                <div>
-                  <span className="product-category">{product.category}</span>
-                  <h3>{product.name}</h3>
-                  <p className="muted">{formatCurrency(product.price)}</p>
+      {step === "menu" ? (
+        <>
+          <section className="store-hero">
+            <div className="store-banner">
+              <div className="store-banner-inner">
+                <p className="eyebrow">Cardapio online</p>
+                <h1>{store.name}</h1>
+                <p>{store.description}</p>
+                <div className="store-hero-meta">
+                  <span>
+                    <MapPin aria-hidden="true" />
+                    {store.address || "Retirada e entrega sob combinacao"}
+                  </span>
+                  <span>
+                    <Clock3 aria-hidden="true" />
+                    {source === "database" ? "Cardapio atualizado" : "Dados de exemplo"}
+                  </span>
                 </div>
+              </div>
+            </div>
+          </section>
+
+          {featuredProducts.length ? (
+            <section className="store-section">
+              <div className="store-section-head">
+                <div>
+                  <p className="eyebrow">Destaques</p>
+                  <h2>Doces em destaque</h2>
+                  <p className="muted">
+                    Produtos selecionados para pedir com poucos toques.
+                  </p>
+                </div>
+              </div>
+              <div className="featured-grid">
+                {featuredProducts.map((product) => (
+                  <article className="featured-card" key={`featured-${product.id}`}>
+                    <button
+                      className="product-card-link"
+                      onClick={() => openProduct(product)}
+                      type="button"
+                    >
+                      {renderProductMedia(product, "featured-image")}
+                      <span className="product-body">
+                        <span className="product-category">{product.category}</span>
+                        <strong>{product.name}</strong>
+                        <span className="price">{formatCurrency(product.price)}</span>
+                      </span>
+                    </button>
+                    <button
+                      className="icon-btn featured-add"
+                      onClick={() => addProduct(product)}
+                      title="Adicionar ao carrinho"
+                      type="button"
+                    >
+                      <Plus aria-hidden="true" />
+                    </button>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          <section className="store-section" id="cardapio">
+            <div className="store-section-head">
+              <div>
+                <p className="eyebrow">Cardapio</p>
+                <h2>Escolha seus produtos</h2>
+                <p className="muted">
+                  Onde voce encontra todos os produtos, ordenados ou filtrados.
+                </p>
+              </div>
+              <span className="store-count">{visibleProducts.length} produtos</span>
+            </div>
+
+            <label className="store-search">
+              <Search aria-hidden="true" />
+              <input
+                aria-label="Buscar produto"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Pesquise pelo nome do doce"
+                value={query}
+              />
+            </label>
+
+            <div className="store-toolbar" aria-label="Categorias">
+              {categories.map((category) => (
                 <button
-                  className="icon-btn featured-add"
-                  onClick={() => addProduct(product)}
-                  title="Adicionar ao carrinho"
+                  className={`chip ${activeCategory === category ? "active" : ""}`}
+                  key={category}
+                  onClick={() => setActiveCategory(category)}
                   type="button"
                 >
-                  <Plus aria-hidden="true" />
+                  {category}
                 </button>
-              </article>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            <div className="product-grid">
+              {visibleProducts.map((product) => (
+                <article className="product-card" key={product.id}>
+                  <button
+                    className="product-card-link"
+                    onClick={() => openProduct(product)}
+                    type="button"
+                  >
+                    {renderProductMedia(product, "product-image")}
+                    <span className="product-body">
+                      <span className="product-category">{product.category}</span>
+                      <strong>{product.name}</strong>
+                      <span className="muted">{product.description}</span>
+                    </span>
+                  </button>
+                  <div className="product-card-footer">
+                    <span className="price">{formatCurrency(product.price)}</span>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => addProduct(product)}
+                      type="button"
+                    >
+                      <Plus aria-hidden="true" />
+                      Adicionar
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        </>
+      ) : null}
+
+      {step === "product" && selectedProduct ? (
+        <section className="store-step">
+          <button className="store-back" onClick={() => setStep("menu")} type="button">
+            Voltar ao cardapio
+          </button>
+          <article className="product-detail">
+            {renderProductMedia(selectedProduct, "product-detail-image")}
+            <div className="product-detail-body">
+              <span className="product-category">{selectedProduct.category}</span>
+              <h1>{selectedProduct.name}</h1>
+              <p>{selectedProduct.description}</p>
+              <span className="product-detail-meta">{selectedProduct.preparationTime}</span>
+              <div className="product-detail-price">
+                <strong>{formatCurrency(selectedProduct.price)}</strong>
+              </div>
+              <button
+                className="btn btn-rose"
+                onClick={() => addProductAndShowCart(selectedProduct)}
+                type="button"
+              >
+                <Plus aria-hidden="true" />
+                Adicionar ao carrinho
+              </button>
+            </div>
+          </article>
         </section>
       ) : null}
 
-      <section className="store-section" id="cardapio">
-        <div className="store-section-head">
-          <div>
-            <p className="eyebrow">Cardapio</p>
-            <h2>Escolha seus produtos</h2>
+      {step === "cart" ? (
+        <section className="store-step">
+          <div className="cart-page-head">
+            <h1>Seu carrinho</h1>
+            <span>{cartCount} {cartCount === 1 ? "item" : "itens"}</span>
           </div>
-          <span className="store-count">{visibleProducts.length} produtos</span>
-        </div>
 
-        <label className="store-search">
-          <Search aria-hidden="true" />
-          <input
-            aria-label="Buscar produto"
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Pesquise pelo nome do doce"
-            value={query}
-          />
-        </label>
-
-        <div className="store-toolbar" aria-label="Categorias">
-          {categories.map((category) => (
-            <button
-              className={`chip ${activeCategory === category ? "active" : ""}`}
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              type="button"
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-
-        <div className="product-grid">
-          {visibleProducts.map((product) => (
-            <article className="product-card" key={product.id}>
-              {product.imageUrl ? (
-                <img className="product-image" src={product.imageUrl} alt="" />
-              ) : (
-                <div
-                  aria-hidden="true"
-                  className="product-art"
-                  style={
-                    {
-                      "--art-bg": product.artBg,
-                      "--art-shape": product.artShape
-                    } as CSSProperties
-                  }
-                />
-              )}
-              <div className="product-body">
-                <span className="product-category">{product.category}</span>
-                <h2>{product.name}</h2>
-                <p className="muted">{product.description}</p>
-                <div className="meta-row">
-                  <span className="badge neutral">{product.preparationTime}</span>
-                </div>
-                <div className="product-card-footer">
-                  <span className="price">{formatCurrency(product.price)}</span>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => addProduct(product)}
-                    type="button"
-                  >
-                    <Plus aria-hidden="true" />
-                    Adicionar
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="store-layout">
-        <aside className="cart-sticky" aria-label="Carrinho" id="checkout">
-          <form className="checkout-panel" onSubmit={submitOrder}>
-            <div className="checkout-head">
-              <div>
-                <p className="eyebrow">Finalizar</p>
-                <h2>Seu pedido</h2>
-              </div>
-              <span className="metric-icon" aria-hidden="true">
-                <ShoppingCart />
-              </span>
+          {cartItems.length === 0 ? (
+            <div className="empty-state">
+              <p className="muted">Seu carrinho ainda esta vazio.</p>
+              <button className="btn btn-primary" onClick={() => setStep("menu")} type="button">
+                Ver cardapio
+              </button>
             </div>
-
-            {cartItems.length === 0 ? (
-              <p className="muted">Escolha os produtos para montar o pedido.</p>
-            ) : (
-              <div className="list">
+          ) : (
+            <>
+              <div className="cart-list">
                 {cartItems.map((item) => (
-                  <div className="cart-line" key={item.product.id}>
+                  <div className="cart-product-line" key={item.product.id}>
+                    {renderProductMedia(item.product, "cart-product-image")}
                     <div>
-                      <p className="item-title">{item.product.name}</p>
-                      <p className="muted">
-                        {formatCurrency(item.product.price)} cada
-                      </p>
+                      <span className="product-category">{item.product.category}</span>
+                      <strong>{item.product.name}</strong>
+                      <span>{formatCurrency(item.product.price * item.quantity)}</span>
                     </div>
                     <div className="qty-control">
                       <button
                         className="icon-btn"
                         onClick={() => removeProduct(item.product.id)}
-                        title="Diminuir quantidade"
                         type="button"
                       >
                         <Minus aria-hidden="true" />
@@ -396,7 +459,6 @@ export function PublicStorefront({
                       <button
                         className="icon-btn"
                         onClick={() => addProduct(item.product)}
-                        title="Aumentar quantidade"
                         type="button"
                       >
                         <Plus aria-hidden="true" />
@@ -405,110 +467,162 @@ export function PublicStorefront({
                   </div>
                 ))}
               </div>
-            )}
+              <div className="cart-summary-panel">
+                <div className="total-row">
+                  <span>Subtotal</span>
+                  <span>{formatCurrency(total)}</span>
+                </div>
+                <button className="btn btn-rose" onClick={() => setStep("checkout")} type="button">
+                  Continuar
+                  <Send aria-hidden="true" />
+                </button>
+              </div>
+            </>
+          )}
+        </section>
+      ) : null}
 
-            <div className="checkout-fields">
+      {step === "checkout" ? (
+        <section className="store-layout">
+          <aside className="cart-sticky" aria-label="Carrinho" id="checkout">
+            <form className="checkout-panel" onSubmit={submitOrder}>
+              <button className="store-back" onClick={() => setStep("cart")} type="button">
+                Voltar ao carrinho
+              </button>
+              <div className="checkout-head">
+                <div>
+                  <p className="eyebrow">Finalizar</p>
+                  <h2>Confira e finalize seu pedido</h2>
+                </div>
+              </div>
+
+              <div className="list">
+                {cartItems.map((item) => (
+                  <div className="cart-line" key={item.product.id}>
+                    <div>
+                      <p className="item-title">{item.product.name}</p>
+                      <p className="muted">
+                        {item.quantity} x {formatCurrency(item.product.price)}
+                      </p>
+                    </div>
+                    <strong>{formatCurrency(item.product.price * item.quantity)}</strong>
+                  </div>
+                ))}
+              </div>
+
+              <div className="checkout-fields">
+                <div className="field">
+                  <label htmlFor="customer-name">Nome</label>
+                  <input className="input" id="customer-name" name="customerName" required />
+                </div>
+
+                <div className="field">
+                  <label htmlFor="customer-whatsapp">WhatsApp</label>
+                  <input
+                    className="input"
+                    id="customer-whatsapp"
+                    inputMode="tel"
+                    name="customerWhatsapp"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="checkout-choice-grid">
+                <button
+                  className={`btn ${fulfillment === "Retirada" ? "btn-primary" : "btn-secondary"}`}
+                  onClick={() => setFulfillment("Retirada")}
+                  type="button"
+                >
+                  <Store aria-hidden="true" />
+                  Retirada
+                </button>
+                <button
+                  className={`btn ${fulfillment === "Entrega" ? "btn-primary" : "btn-secondary"}`}
+                  onClick={() => setFulfillment("Entrega")}
+                  type="button"
+                >
+                  <Send aria-hidden="true" />
+                  Entrega
+                </button>
+              </div>
+
+              {fulfillment === "Entrega" ? (
+                <div className="field">
+                  <label htmlFor="address">Endereco</label>
+                  <input
+                    className="input"
+                    id="address"
+                    name="deliveryAddress"
+                    required
+                  />
+                </div>
+              ) : null}
+
               <div className="field">
-                <label htmlFor="customer-name">Nome</label>
-                <input className="input" id="customer-name" name="customerName" required />
+                <label htmlFor="delivery-date">Data desejada</label>
+                <span style={{ position: "relative" }}>
+                  <CalendarDays
+                    aria-hidden="true"
+                    style={{
+                      color: "var(--muted)",
+                      height: "1rem",
+                      left: "0.8rem",
+                      position: "absolute",
+                      top: "0.88rem",
+                      width: "1rem"
+                    }}
+                  />
+                  <input
+                    className="input"
+                    id="delivery-date"
+                    name="deliveryDate"
+                    required
+                    style={{ paddingLeft: "2.25rem" }}
+                    type="date"
+                  />
+                </span>
               </div>
 
               <div className="field">
-                <label htmlFor="customer-whatsapp">WhatsApp</label>
-                <input
-                  className="input"
-                  id="customer-whatsapp"
-                  inputMode="tel"
-                  name="customerWhatsapp"
-                  required
+                <label htmlFor="notes">Observacoes</label>
+                <textarea
+                  className="textarea"
+                  id="notes"
+                  name="customerNotes"
+                  placeholder="Tema, restricoes, mensagem no bolo..."
                 />
               </div>
-            </div>
 
-            <div className="checkout-choice-grid">
+              <div className="order-total-list">
+                <div>
+                  <span>Itens</span>
+                  <strong>{formatCurrency(total)}</strong>
+                </div>
+                <div>
+                  <span>Frete</span>
+                  <strong>A combinar</strong>
+                </div>
+                <div className="total-row">
+                  <span>Total estimado</span>
+                  <span>{formatCurrency(total)}</span>
+                </div>
+              </div>
+
+              {formError ? <p className="form-error">{formError}</p> : null}
+
               <button
-                className={`btn ${fulfillment === "Retirada" ? "btn-primary" : "btn-secondary"}`}
-                onClick={() => setFulfillment("Retirada")}
-                type="button"
-              >
-                <Store aria-hidden="true" />
-                Retirada
-              </button>
-              <button
-                className={`btn ${fulfillment === "Entrega" ? "btn-primary" : "btn-secondary"}`}
-                onClick={() => setFulfillment("Entrega")}
-                type="button"
+                className="btn btn-rose"
+                disabled={cartItems.length === 0 || isSubmitting}
+                type="submit"
               >
                 <Send aria-hidden="true" />
-                Entrega
+                {isSubmitting ? "Enviando..." : "Confirmar pedido"}
               </button>
-            </div>
-
-            {fulfillment === "Entrega" ? (
-              <div className="field">
-                <label htmlFor="address">Endereco</label>
-                <input
-                  className="input"
-                  id="address"
-                  name="deliveryAddress"
-                  required
-                />
-              </div>
-            ) : null}
-
-            <div className="field">
-              <label htmlFor="delivery-date">Data desejada</label>
-              <span style={{ position: "relative" }}>
-                <CalendarDays
-                  aria-hidden="true"
-                  style={{
-                    color: "var(--muted)",
-                    height: "1rem",
-                    left: "0.8rem",
-                    position: "absolute",
-                    top: "0.88rem",
-                    width: "1rem"
-                  }}
-                />
-                <input
-                  className="input"
-                  id="delivery-date"
-                  name="deliveryDate"
-                  required
-                  style={{ paddingLeft: "2.25rem" }}
-                  type="date"
-                />
-              </span>
-            </div>
-
-            <div className="field">
-              <label htmlFor="notes">Observacoes</label>
-              <textarea
-                className="textarea"
-                id="notes"
-                name="customerNotes"
-                placeholder="Tema, restricoes, mensagem no bolo..."
-              />
-            </div>
-
-            <div className="total-row">
-              <span>Total estimado</span>
-              <span>{formatCurrency(total)}</span>
-            </div>
-
-            {formError ? <p className="form-error">{formError}</p> : null}
-
-            <button
-              className="btn btn-rose"
-              disabled={cartItems.length === 0 || isSubmitting}
-              type="submit"
-            >
-              <Send aria-hidden="true" />
-              {isSubmitting ? "Enviando..." : "Enviar pedido"}
-            </button>
-          </form>
-        </aside>
-      </section>
+            </form>
+          </aside>
+        </section>
+      ) : null}
 
       <footer className="store-footer">
         <div className="store-socials" aria-label="Contatos">
@@ -523,7 +637,7 @@ export function PublicStorefront({
             <UserRound aria-hidden="true" />
           </span>
         </div>
-        <p>Copyright © {store.name}</p>
+        <p>Copyright (c) {store.name}</p>
       </footer>
     </main>
   );

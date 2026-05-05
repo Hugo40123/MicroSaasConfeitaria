@@ -2,7 +2,13 @@ import type { Product, ProductCategory } from "@/lib/sample-data";
 import { products as sampleProducts, store as sampleStore } from "@/lib/sample-data";
 import { getPrismaClient, isDatabaseConfigured } from "@/lib/prisma";
 
-export type StoreProfile = typeof sampleStore;
+export type StoreProfile = typeof sampleStore & {
+  themePrimary: string;
+  themePrimaryStrong: string;
+  themeAccent: string;
+  themeBackground: string;
+  themeSoft: string;
+};
 export type ProductCategoryValue =
   | "WHOLE_CAKE"
   | "CAKE_SLICE"
@@ -127,13 +133,23 @@ function mapDbStoreToStoreProfile(store: {
   phone: string | null;
   whatsapp: string | null;
   address: string | null;
+  themePrimary: string;
+  themePrimaryStrong: string;
+  themeAccent: string;
+  themeBackground: string;
+  themeSoft: string;
 }): StoreProfile {
   return {
     name: store.name,
     slug: store.publicSlug,
     phone: store.phone ?? store.whatsapp ?? "",
     address: store.address ?? "",
-    description: sampleStore.description
+    description: sampleStore.description,
+    themePrimary: store.themePrimary,
+    themePrimaryStrong: store.themePrimaryStrong,
+    themeAccent: store.themeAccent,
+    themeBackground: store.themeBackground,
+    themeSoft: store.themeSoft
   };
 }
 
@@ -207,7 +223,12 @@ export async function listOnlineProductsForStore(storeSlug: string): Promise<{
       data: sampleProducts.filter((product) => product.active && product.online),
       store: {
         ...sampleStore,
-        slug: storeSlug || sampleStore.slug
+        slug: storeSlug || sampleStore.slug,
+        themePrimary: "#d79771",
+        themePrimaryStrong: "#734939",
+        themeAccent: "#f7b239",
+        themeBackground: "#fff6e8",
+        themeSoft: "#fff0da"
       },
       source: "mock",
       found: true
@@ -222,7 +243,12 @@ export async function listOnlineProductsForStore(storeSlug: string): Promise<{
       store: {
         ...sampleStore,
         name: "Loja nao encontrada",
-        slug: storeSlug
+        slug: storeSlug,
+        themePrimary: "#d79771",
+        themePrimaryStrong: "#734939",
+        themeAccent: "#f7b239",
+        themeBackground: "#fff6e8",
+        themeSoft: "#fff0da"
       },
       source: "database",
       found: false

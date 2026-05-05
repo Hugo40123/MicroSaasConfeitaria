@@ -9,6 +9,17 @@ function getString(formData: FormData, field: string) {
   return String(formData.get(field) ?? "").trim();
 }
 
+function parseColor(formData: FormData, field: string, fallback: string) {
+  const value = getString(formData, field);
+
+  if (!value) return fallback;
+  if (!/^#[0-9a-f]{6}$/i.test(value)) {
+    throw new Error("Informe cores em formato hexadecimal valido.");
+  }
+
+  return value.toLowerCase();
+}
+
 function parseStoreSettings(formData: FormData) {
   const name = getString(formData, "name");
   const publicSlug = makeSlug(getString(formData, "publicSlug"));
@@ -30,6 +41,11 @@ function parseStoreSettings(formData: FormData) {
     phone: phone || null,
     whatsapp: whatsapp || null,
     address: address || null,
+    themePrimary: parseColor(formData, "themePrimary", "#d79771"),
+    themePrimaryStrong: parseColor(formData, "themePrimaryStrong", "#734939"),
+    themeAccent: parseColor(formData, "themeAccent", "#f7b239"),
+    themeBackground: parseColor(formData, "themeBackground", "#fff6e8"),
+    themeSoft: parseColor(formData, "themeSoft", "#fff0da"),
     onlineOrdersEnabled: formData.get("onlineOrdersEnabled") === "on",
     pickupEnabled: formData.get("pickupEnabled") === "on",
     deliveryEnabled: formData.get("deliveryEnabled") === "on"
