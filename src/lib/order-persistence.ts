@@ -19,6 +19,29 @@ type DbOrderForUi = DbOrder & {
   };
 };
 
+export type DatabaseOrderStatus =
+  | "AWAITING_CONFIRMATION"
+  | "CONFIRMED"
+  | "PENDING"
+  | "IN_PRODUCTION"
+  | "READY"
+  | "OUT_FOR_DELIVERY"
+  | "DELIVERED"
+  | "CANCELLED";
+
+export const orderStatusOptions = [
+  { value: "AWAITING_CONFIRMATION", label: "Aguardando confirmacao" },
+  { value: "CONFIRMED", label: "Confirmado" },
+  { value: "IN_PRODUCTION", label: "Em producao" },
+  { value: "READY", label: "Pronto" },
+  { value: "OUT_FOR_DELIVERY", label: "Saiu para entrega" },
+  { value: "DELIVERED", label: "Entregue" },
+  { value: "CANCELLED", label: "Cancelado" }
+] as const satisfies ReadonlyArray<{
+  value: DatabaseOrderStatus;
+  label: string;
+}>;
+
 const statusMap = {
   AWAITING_CONFIRMATION: "aguardando_confirmacao",
   CONFIRMED: "confirmado",
@@ -29,6 +52,17 @@ const statusMap = {
   DELIVERED: "entregue",
   CANCELLED: "cancelado"
 } as const;
+
+export const uiToDatabaseStatusMap = {
+  aguardando_confirmacao: "AWAITING_CONFIRMATION",
+  confirmado: "CONFIRMED",
+  pendente: "PENDING",
+  em_producao: "IN_PRODUCTION",
+  pronto: "READY",
+  saiu_para_entrega: "OUT_FOR_DELIVERY",
+  entregue: "DELIVERED",
+  cancelado: "CANCELLED"
+} as const satisfies Record<Order["status"], DatabaseOrderStatus>;
 
 const sourceMap = {
   INTERNAL: "Pedido interno",

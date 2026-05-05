@@ -58,7 +58,7 @@ npm run build
 ## Rotas importantes
 
 - `/app`: painel da loja
-- `/app/pedidos`: pedidos
+- `/app/pedidos`: pedidos e atualizacao de status
 - `/app/agenda`: agenda de producao
 - `/app/produtos`: produtos, edicao, status e visibilidade online
 - `/app/clientes`: clientes
@@ -96,15 +96,17 @@ A autenticacao tambem usa fallback:
 - A API `GET /api/orders` exige sessao para listar pedidos da loja logada.
 - O CRUD de produtos usa Server Actions, valida preco/categoria/prazos e grava sempre filtrando por `storeId`.
 - Sem PostgreSQL real, a tela de produtos continua mostrando dados de exemplo, mas desabilita gravacao para evitar falsa persistencia.
+- A gestao de status de pedidos usa Server Actions e sempre confirma `storeId` antes de alterar um pedido.
+- Sem PostgreSQL real, a tela de pedidos continua mostrando dados de exemplo, mas desabilita alteracao de status.
+- A pagina publica `/pedido/[codigo]` mostra uma timeline baseada no status real do pedido.
 
 ## Proximas etapas tecnicas
 
 1. Conectar o PostgreSQL local/remoto seguindo `docs/BANCO_DE_DADOS.md`.
 2. Rodar migrations e seed.
-3. Criar gestao real de status de pedidos.
-4. Adicionar permissoes de Admin e Atendente.
-5. Configurar upload de imagens de produtos.
-6. Criar integracao com WhatsApp e geracao de recibo.
+3. Adicionar permissoes de Admin e Atendente.
+4. Configurar upload de imagens de produtos.
+5. Criar integracao com WhatsApp e geracao de recibo.
 
 ## Backup remoto
 

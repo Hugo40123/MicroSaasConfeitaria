@@ -12,7 +12,7 @@ MVP inicial de um sistema SaaS para pequenas confeitarias, com painel da loja e 
 ## Rotas principais
 
 - `/app`: painel da loja
-- `/app/pedidos`: gestao de pedidos
+- `/app/pedidos`: gestao de pedidos e atualizacao de status
 - `/app/agenda`: agenda de producao
 - `/app/produtos`: cadastro, edicao, ativacao e visibilidade online de produtos
 - `/app/clientes`: cadastro de clientes
@@ -61,7 +61,7 @@ Para detalhes de banco local, banco remoto e deploy de migrations, consulte `doc
 
 ## Proxima etapa
 
-Criar gestao real de status dos pedidos pelo painel interno.
+Adicionar permissoes de Admin e Atendente para separar operacao e configuracoes.
 
 ## Resumo leigo das funcoes atuais
 
@@ -73,6 +73,8 @@ Criar gestao real de status dos pedidos pelo painel interno.
 - O painel interno ja exige login e permite sair da conta.
 - Produtos, pedidos e link do portal agora usam a loja do usuario logado quando ha banco real.
 - O painel de produtos ja permite criar, editar, ativar/desativar e controlar visibilidade no portal quando houver PostgreSQL real.
+- O painel de pedidos ja permite confirmar, avancar, cancelar e corrigir status quando houver PostgreSQL real.
+- A pagina publica de acompanhamento reflete o status real do pedido.
 
 ## Versionamento
 

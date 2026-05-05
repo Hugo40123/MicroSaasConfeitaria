@@ -4,6 +4,45 @@ import { store } from "@/lib/sample-data";
 import { PackageCheck, Send, Store } from "lucide-react";
 import Link from "next/link";
 
+const timelineSteps = [
+  {
+    status: "aguardando_confirmacao",
+    title: "Pedido enviado",
+    description: "A loja recebeu sua solicitacao."
+  },
+  {
+    status: "confirmado",
+    title: "Pedido confirmado",
+    description: "A equipe confirmou agenda, valor e disponibilidade."
+  },
+  {
+    status: "em_producao",
+    title: "Em producao",
+    description: "Seu pedido esta sendo preparado."
+  },
+  {
+    status: "pronto",
+    title: "Pronto",
+    description: "Retirada ou entrega liberada."
+  },
+  {
+    status: "entregue",
+    title: "Entregue",
+    description: "Pedido concluido."
+  }
+] as const;
+
+const statusStepIndex = {
+  aguardando_confirmacao: 0,
+  pendente: 0,
+  confirmado: 1,
+  em_producao: 2,
+  pronto: 3,
+  saiu_para_entrega: 3,
+  entregue: 4,
+  cancelado: -1
+} as const;
+
 export default async function TrackingPage({
   params
 }: {
@@ -20,6 +59,7 @@ export default async function TrackingPage({
   const whatsappHref = whatsappDigits
     ? `https://wa.me/${whatsappDigits.startsWith("55") ? whatsappDigits : `55${whatsappDigits}`}`
     : "#";
+  const currentStep = statusStepIndex[order.status];
 
   return (
     <main className="storefront">
@@ -46,36 +86,36 @@ export default async function TrackingPage({
               {orderResult.source === "database" ? "PostgreSQL" : "dados de exemplo"}
             </p>
             <div className="timeline">
-              <div className="timeline-step done">
-                <span className="dot" aria-hidden="true" />
-                <div>
-                  <p className="item-title">Pedido enviado</p>
-                  <p className="item-subtitle">A loja recebeu sua solicitacao.</p>
+              {order.status === "cancelado" ? (
+                <div className="timeline-step current">
+                  <span className="dot" aria-hidden="true" />
+                  <div>
+                    <p className="item-title">Pedido cancelado</p>
+                    <p className="item-subtitle">
+                      Entre em contato com a loja para combinar um novo pedido.
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="timeline-step current">
-                <span className="dot" aria-hidden="true" />
-                <div>
-                  <p className="item-title">Aguardando confirmacao</p>
-                  <p className="item-subtitle">
-                    A equipe revisa agenda, valor e sinal antes da producao.
-                  </p>
-                </div>
-              </div>
-              <div className="timeline-step">
-                <span className="dot" aria-hidden="true" />
-                <div>
-                  <p className="item-title">Em producao</p>
-                  <p className="item-subtitle">Seu pedido esta sendo preparado.</p>
-                </div>
-              </div>
-              <div className="timeline-step">
-                <span className="dot" aria-hidden="true" />
-                <div>
-                  <p className="item-title">Pronto</p>
-                  <p className="item-subtitle">Retirada ou entrega liberada.</p>
-                </div>
-              </div>
+              ) : (
+                timelineSteps.map((step, index) => (
+                  <div
+                    className={`timeline-step ${
+                      index < currentStep
+                        ? "done"
+                        : index === currentStep
+                          ? "current"
+                          : ""
+                    }`}
+                    key={step.status}
+                  >
+                    <span className="dot" aria-hidden="true" />
+                    <div>
+                      <p className="item-title">{step.title}</p>
+                      <p className="item-subtitle">{step.description}</p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
