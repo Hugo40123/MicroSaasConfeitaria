@@ -61,7 +61,7 @@ Para detalhes de banco local, banco remoto e deploy de migrations, consulte `doc
 
 ## Proxima etapa
 
-Preparar deploy com banco remoto e variaveis de ambiente.
+Adicionar recuperacao e troca de senha.
 
 ## Resumo leigo das funcoes atuais
 
@@ -102,3 +102,5 @@ Com PostgreSQL real e `npm run db:seed`, use:
 Este projeto deve ser mantido em Git. Arquivos sensiveis e gerados, como `.env`, `.next`, `node_modules` e logs, ficam fora do versionamento.
 
 Para continuar o desenvolvimento em outra conta ou maquina, consulte `docs/CONTINUAR_DESENVOLVIMENTO.md`.
+
+Para publicar o MVP com PostgreSQL remoto, consulte `docs/DEPLOY.md`.

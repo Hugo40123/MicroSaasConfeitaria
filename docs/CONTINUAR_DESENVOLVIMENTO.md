@@ -148,3 +148,9 @@ O Git local protege o historico dentro desta pasta. Para proteger contra perda d
 git status
 git push
 ```
+
+## Deploy
+
+Use `docs/DEPLOY.md` para publicar com PostgreSQL remoto. Antes de deploy, rode
+`npm run typecheck`, `npm run build` e `npm run prisma:deploy` no ambiente com
+`DATABASE_URL` real.
