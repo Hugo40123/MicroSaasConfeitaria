@@ -1,43 +1,48 @@
 import { MetricCard } from "@/components/metric-card";
 import { requirePermission } from "@/lib/current-user";
-import { formatCurrency, orders } from "@/lib/sample-data";
+import { createFinancialTransactionAction } from "@/lib/financial-actions";
+import { getFinancialSummary } from "@/lib/financial-repository";
+import { formatCurrency } from "@/lib/sample-data";
 import { ArrowDownCircle, ArrowUpCircle, Plus, WalletCards } from "lucide-react";
 
-const expenses = [
-  { date: "Hoje", description: "Morango e leite condensado", value: 64 },
-  { date: "Hoje", description: "Embalagens", value: 28 },
-  { date: "Ontem", description: "Entrega por aplicativo", value: 18 }
-];
-
 export default async function FinancePage() {
-  await requirePermission("view_finance");
-
-  const entries = orders.reduce((sum, order) => sum + order.paidSignal, 0);
-  const exits = expenses.reduce((sum, expense) => sum + expense.value, 0);
-  const balance = entries - exits;
+  const user = await requirePermission("view_finance");
+  const financeResult = await getFinancialSummary(user.storeId);
+  const { balance, entries, exits, transactions } = financeResult.data;
+  const isMock = financeResult.source === "mock";
 
   return (
     <>
       <header className="page-head">
         <div>
           <p className="eyebrow">Financeiro</p>
-          <h1>Caixa básico para entradas, sinais e despesas.</h1>
+          <h1>Caixa basico para entradas, sinais e despesas.</h1>
           <p className="lead">
-            O foco é dar clareza diária sem transformar a operação em contabilidade
+            O foco e dar clareza diaria sem transformar a operacao em contabilidade
             completa.
           </p>
+          <p className="muted" style={{ marginTop: "0.75rem" }}>
+            Fonte do financeiro:{" "}
+            {financeResult.source === "database" ? "PostgreSQL" : "dados de exemplo"}
+          </p>
+          {isMock ? (
+            <p className="form-error" style={{ marginTop: "0.9rem" }}>
+              Lancamentos desabilitados enquanto o PostgreSQL real nao estiver
+              configurado.
+            </p>
+          ) : null}
         </div>
         <div className="actions">
-          <button className="btn btn-primary" type="button">
+          <a className="btn btn-primary" href="#nova-movimentacao">
             <Plus aria-hidden="true" />
-            Nova despesa
-          </button>
+            Nova movimentacao
+          </a>
         </div>
       </header>
 
       <section className="metrics-grid">
         <MetricCard
-          detail="Pedidos e sinais recebidos"
+          detail="Pedidos, sinais e receitas"
           icon={ArrowUpCircle}
           label="Entradas"
           value={formatCurrency(entries)}
@@ -45,20 +50,63 @@ export default async function FinancePage() {
         <MetricCard
           detail="Despesas manuais"
           icon={ArrowDownCircle}
-          label="Saídas"
+          label="Saidas"
           value={formatCurrency(exits)}
         />
         <MetricCard
-          detail="Resultado do período"
+          detail="Resultado do periodo"
           icon={WalletCards}
           label="Saldo"
           value={formatCurrency(balance)}
         />
       </section>
 
+      <section className="panel" id="nova-movimentacao" style={{ marginTop: "1rem" }}>
+        <div className="section-head">
+          <h2>Nova movimentacao</h2>
+        </div>
+        <form action={createFinancialTransactionAction} className="product-form">
+          <div className="form-grid">
+            <label className="field">
+              <span>Tipo</span>
+              <select className="select" disabled={isMock} name="type">
+                <option value="INCOME">Entrada</option>
+                <option value="EXPENSE">Saida</option>
+              </select>
+            </label>
+            <label className="field">
+              <span>Valor</span>
+              <input
+                className="input"
+                disabled={isMock}
+                min="0.01"
+                name="amount"
+                required
+                step="0.01"
+                type="number"
+              />
+            </label>
+            <label className="field">
+              <span>Data</span>
+              <input className="input" disabled={isMock} name="date" type="date" />
+            </label>
+          </div>
+          <label className="field">
+            <span>Descricao</span>
+            <input className="input" disabled={isMock} name="description" required />
+          </label>
+          <div className="actions">
+            <button className="btn btn-primary" disabled={isMock} type="submit">
+              <Plus aria-hidden="true" />
+              Registrar
+            </button>
+          </div>
+        </form>
+      </section>
+
       <section className="panel" style={{ marginTop: "1rem" }}>
         <div className="section-head">
-          <h2>Movimentações recentes</h2>
+          <h2>Movimentacoes recentes</h2>
         </div>
         <div className="table-wrap">
           <table>
@@ -66,29 +114,21 @@ export default async function FinancePage() {
               <tr>
                 <th>Data</th>
                 <th>Tipo</th>
-                <th>Descrição</th>
+                <th>Descricao</th>
                 <th>Valor</th>
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
-                <tr key={order.id}>
-                  <td>{order.deliveryDate}</td>
+              {transactions.map((transaction) => (
+                <tr key={transaction.id}>
+                  <td>{transaction.date}</td>
                   <td>
-                    <span className="badge ready">Entrada</span>
+                    <span className={`badge ${transaction.type === "Entrada" ? "ready" : "cancelled"}`}>
+                      {transaction.type}
+                    </span>
                   </td>
-                  <td>Sinal pedido {order.code}</td>
-                  <td>{formatCurrency(order.paidSignal)}</td>
-                </tr>
-              ))}
-              {expenses.map((expense) => (
-                <tr key={expense.description}>
-                  <td>{expense.date}</td>
-                  <td>
-                    <span className="badge cancelled">Saída</span>
-                  </td>
-                  <td>{expense.description}</td>
-                  <td>{formatCurrency(expense.value)}</td>
+                  <td>{transaction.description}</td>
+                  <td>{formatCurrency(transaction.amount)}</td>
                 </tr>
               ))}
             </tbody>

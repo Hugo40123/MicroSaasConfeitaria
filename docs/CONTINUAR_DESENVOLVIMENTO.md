@@ -125,13 +125,16 @@ A autenticacao tambem usa fallback:
   - `src/lib/agenda-repository.ts` lista pedidos pendentes futuros da loja;
   - `/app/agenda` mostra timeline de hoje ou proximos pedidos;
   - pedidos entregues e cancelados saem da agenda.
+- Financeiro real:
+  - `src/lib/financial-repository.ts` soma sinais de pedidos e transacoes manuais;
+  - `src/lib/financial-actions.ts` cria receitas/despesas por `storeId`;
+  - sem PostgreSQL real, a tela mostra mock e bloqueia lancamentos.
 
 ## Proximas etapas tecnicas
 
 1. Conectar o PostgreSQL local/remoto seguindo `docs/BANCO_DE_DADOS.md`.
 2. Rodar migrations e seed.
-3. Criar financeiro real.
-4. Criar integracao com WhatsApp e geracao de recibo.
+3. Criar integracao com WhatsApp e geracao de recibo.
 
 ## Backup remoto
 
