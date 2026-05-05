@@ -23,7 +23,7 @@ const nextStatusByCurrentStatus: Partial<Record<OrderStatus, DatabaseOrderStatus
 
 const nextStatusCopy: Partial<Record<OrderStatus, string>> = {
   aguardando_confirmacao: "Confirmar pedido",
-  confirmado: "Iniciar producao",
+  confirmado: "Iniciar produção",
   pendente: "Confirmar pedido",
   em_producao: "Marcar como pronto",
   pronto: "Marcar como entregue",
@@ -42,10 +42,10 @@ export default async function OrdersPage() {
     <>
       <header className="page-head">
         <div>
-          <p className="eyebrow">Gestao de pedidos</p>
+          <p className="eyebrow">Gestão de pedidos</p>
           <h1>Confirme pedidos do portal e acompanhe cada entrega.</h1>
           <p className="lead">
-            O pedido enviado pelo cliente entra como aguardando confirmacao para a
+            O pedido enviado pelo cliente entra como aguardando confirmação para a
             loja revisar prazo, valor, sinal e disponibilidade.
           </p>
           <p className="muted" style={{ marginTop: "0.75rem" }}>
@@ -54,7 +54,7 @@ export default async function OrdersPage() {
           </p>
           {isMock ? (
             <p className="form-error" style={{ marginTop: "0.9rem" }}>
-              Gestao de status desabilitada enquanto o PostgreSQL real nao estiver
+              Gestão de status desabilitada enquanto o PostgreSQL real não estiver
               configurado.
             </p>
           ) : null}
@@ -72,7 +72,7 @@ export default async function OrdersPage() {
           <summary>
             <span>
               <strong>Novo pedido interno</strong>
-              <small>Registre pedidos recebidos pelo balcao, telefone ou WhatsApp.</small>
+              <small>Registre pedidos recebidos pelo balcão, telefone ou WhatsApp.</small>
             </span>
             <Plus aria-hidden="true" />
           </summary>
@@ -121,16 +121,16 @@ export default async function OrdersPage() {
                 <input className="input" disabled={isMock} name="deliveryDate" required type="date" />
               </label>
               <label className="field">
-                <span>Horario</span>
+                <span>Horário</span>
                 <input className="input" disabled={isMock} name="deliveryTime" type="time" />
               </label>
               <label className="field">
-                <span>Endereco</span>
+                <span>Endereço</span>
                 <input className="input" disabled={isMock} name="deliveryAddress" />
               </label>
             </div>
             <label className="field">
-              <span>Observacoes internas</span>
+              <span>Observações internas</span>
               <textarea className="textarea" disabled={isMock} name="internalNotes" />
             </label>
             <div className="actions">
@@ -144,7 +144,7 @@ export default async function OrdersPage() {
 
         <div className="search-row">
           <label className="field">
-            <span>Busca rapida</span>
+            <span>Busca rápida</span>
             <span style={{ position: "relative" }}>
               <Search
                 aria-hidden="true"
@@ -159,7 +159,7 @@ export default async function OrdersPage() {
               />
               <input
                 className="input"
-                placeholder="Cliente, telefone ou codigo"
+                placeholder="Cliente, telefone ou código"
                 style={{ paddingLeft: "2.25rem" }}
               />
             </span>
@@ -168,8 +168,8 @@ export default async function OrdersPage() {
             <span>Status</span>
             <select className="select" defaultValue="">
               <option value="">Todos</option>
-              <option>Aguardando confirmacao</option>
-              <option>Em producao</option>
+              <option>Aguardando confirmação</option>
+              <option>Em produção</option>
               <option>Pronto</option>
             </select>
           </label>
@@ -194,29 +194,29 @@ export default async function OrdersPage() {
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id}>
-                  <td>
+                  <td data-label="Pedido">
                     <strong>{order.code}</strong>
                     <p className="muted">{order.source}</p>
                   </td>
-                  <td>
+                  <td data-label="Cliente">
                     <strong>{order.customer}</strong>
                     <p className="muted">{order.whatsapp}</p>
                   </td>
-                  <td>
+                  <td data-label="Entrega">
                     <strong>
                       {order.deliveryDate} - {order.deliveryTime}
                     </strong>
                     <p className="muted">{order.items.join(", ")}</p>
                   </td>
-                  <td>
+                  <td data-label="Status">
                     <StatusBadge status={order.status} />
                   </td>
-                  <td>
+                  <td data-label="Total">
                     <strong>{formatCurrency(order.total)}</strong>
                     <p className="muted">Sinal {formatCurrency(order.paidSignal)}</p>
                   </td>
-                  <td>
-                    <div className="actions">
+                  <td data-label="Ações">
+                    <div className="row-actions">
                       {nextStatusByCurrentStatus[order.status] ? (
                         <form action={updateOrderStatusAction}>
                           <input name="orderId" type="hidden" value={order.id} />

@@ -60,7 +60,7 @@ function ProductForm({
         </label>
 
         <label className="field">
-          <span>Preco de venda</span>
+        <span>Preço de venda</span>
           <input
             className="input"
             defaultValue={product?.basePrice}
@@ -102,7 +102,7 @@ function ProductForm({
         </label>
 
         <label className="field">
-          <span>Antecedencia minima em dias</span>
+        <span>Antecedência mínima em dias</span>
           <input
             className="input"
             defaultValue={product?.minOrderNoticeDays ?? ""}
@@ -116,7 +116,7 @@ function ProductForm({
       </div>
 
       <label className="field">
-        <span>Descricao</span>
+        <span>Descrição</span>
         <textarea
           className="textarea"
           defaultValue={product?.description}
@@ -156,7 +156,7 @@ function ProductForm({
             name="availableOnline"
             type="checkbox"
           />
-          Visivel no portal
+          Visível no portal
         </label>
       </div>
 
@@ -189,9 +189,9 @@ export default async function ProductsPage({
       <header className="page-head">
         <div>
           <p className="eyebrow">Produtos</p>
-          <h1>Cardapio organizado para vender no balcao e online.</h1>
+          <h1>Cardápio organizado para vender no balcão e online.</h1>
           <p className="lead">
-            Controle preco, prazo de preparo, disponibilidade no portal do cliente e
+            Controle preço, prazo de preparo, disponibilidade no portal do cliente e
             itens extras para encomendas personalizadas.
           </p>
           <p className="muted" style={{ marginTop: "0.75rem" }}>
@@ -200,7 +200,7 @@ export default async function ProductsPage({
           </p>
           {isMock ? (
             <p className="form-error" style={{ marginTop: "0.9rem" }}>
-              CRUD desabilitado enquanto o PostgreSQL real nao estiver configurado.
+              CRUD desabilitado enquanto o PostgreSQL real não estiver configurado.
               Configure `DATABASE_URL`, rode as migrations e volte aqui para gravar produtos.
             </p>
           ) : null}
@@ -228,7 +228,7 @@ export default async function ProductsPage({
           <summary>
             <span>
               <strong>Novo produto</strong>
-              <small>Cadastre preco, categoria, prazo e visibilidade online.</small>
+              <small>Cadastre preço, categoria, prazo e visibilidade online.</small>
             </span>
             <Plus aria-hidden="true" />
           </summary>
@@ -297,7 +297,7 @@ export default async function ProductsPage({
             <tbody>
               {products.map((product) => (
                 <tr key={product.id}>
-                  <td>
+                  <td data-label="Produto">
                     {product.imageUrl ? (
                       <img
                         alt=""
@@ -308,22 +308,22 @@ export default async function ProductsPage({
                     <strong>{product.name}</strong>
                     <p className="muted">{product.description}</p>
                   </td>
-                  <td>{product.category}</td>
-                  <td>
+                  <td data-label="Categoria">{product.category}</td>
+                  <td data-label="Preço">
                     <strong>{formatCurrency(product.price)}</strong>
                   </td>
-                  <td>{product.preparationTime}</td>
-                  <td>
+                  <td data-label="Preparo">{product.preparationTime}</td>
+                  <td data-label="Portal">
                     <span className={`badge ${product.online ? "ready" : "neutral"}`}>
-                      {product.online ? "Visivel" : "Oculto"}
+                      {product.online ? "Visível" : "Oculto"}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Status">
                     <span className={`badge ${product.active ? "ready" : "cancelled"}`}>
                       {product.active ? "Ativo" : "Inativo"}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Ações">
                     <div className="row-actions">
                       <form action={toggleProductOnlineAction}>
                         <input name="productId" type="hidden" value={product.id} />
@@ -399,7 +399,7 @@ export default async function ProductsPage({
                 action={updateProductAction}
                 disabled={isMock}
                 product={product}
-                submitLabel="Salvar alteracoes"
+                submitLabel="Salvar alterações"
               />
             </details>
           ))}

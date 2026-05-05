@@ -16,18 +16,18 @@ export default async function SettingsPage() {
     <>
       <header className="page-head">
         <div>
-          <p className="eyebrow">Configuracoes</p>
+          <p className="eyebrow">Configurações</p>
           <h1>Dados da loja, venda online e formas de pagamento.</h1>
           <p className="lead">
-            Aqui ficam as regras que controlam o portal publico e a operacao interna.
+            Aqui ficam as regras que controlam o portal público e a operação interna.
           </p>
           <p className="muted" style={{ marginTop: "0.75rem" }}>
-            Fonte das configuracoes:{" "}
+            Fonte das configurações:{" "}
             {settingsResult.source === "database" ? "PostgreSQL" : "dados de exemplo"}
           </p>
           {isMock ? (
             <p className="form-error" style={{ marginTop: "0.9rem" }}>
-              Configuracoes em modo leitura enquanto o PostgreSQL real nao estiver
+              Configurações em modo leitura enquanto o PostgreSQL real não estiver
               configurado.
             </p>
           ) : null}
@@ -58,7 +58,7 @@ export default async function SettingsPage() {
               />
             </label>
             <label className="field">
-              <span>Link publico</span>
+                <span>Link público</span>
               <input
                 className="input"
                 defaultValue={settings.publicSlug}
@@ -86,7 +86,7 @@ export default async function SettingsPage() {
               />
             </label>
             <label className="field">
-              <span>Endereco</span>
+                <span>Endereço</span>
               <input
                 className="input"
                 defaultValue={settings.address}
@@ -151,7 +151,7 @@ export default async function SettingsPage() {
                 <input className="input" disabled={isMock} name="email" required type="email" />
               </label>
               <label className="field">
-                <span>Senha temporaria</span>
+                <span>Senha temporária</span>
                 <input className="input" disabled={isMock} minLength={8} name="password" required type="password" />
               </label>
             </div>
@@ -181,7 +181,7 @@ export default async function SettingsPage() {
 
         <div className="panel">
           <div className="section-head">
-            <h2>Seguranca</h2>
+            <h2>Segurança</h2>
             <ShieldCheck aria-hidden="true" />
           </div>
           <form action={changeOwnPasswordAction} className="product-form">
