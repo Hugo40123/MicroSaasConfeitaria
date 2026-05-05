@@ -67,6 +67,27 @@ button:disabled {
   min-height: 100vh;
 }
 
+.auth-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 1rem;
+}
+
+.auth-panel {
+  display: grid;
+  gap: 1.25rem;
+  width: min(100%, 520px);
+}
+
+.auth-brand {
+  padding: 0;
+}
+
+.auth-card {
+  box-shadow: var(--shadow);
+}
+
 .sidebar {
   position: sticky;
   top: 0;

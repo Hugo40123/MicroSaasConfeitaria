@@ -59,6 +59,8 @@ npm run build
 - `/app/financeiro`: financeiro
 - `/app/relatorios`: relatorios
 - `/app/configuracoes`: configuracoes
+- `/login`: entrada do usuario da loja
+- `/cadastro`: cadastro inicial da loja
 - `/loja/doce-maria`: portal publico do cliente
 - `/pedido/BM-1042`: acompanhamento do pedido
 - `/api/orders`: API de pedidos
@@ -79,15 +81,22 @@ A API de pedidos usa fallback automatico:
 - Se `DATABASE_URL` estiver com o placeholder do `.env.example`, usa dados mockados.
 - Se `DATABASE_URL` apontar para um PostgreSQL real, usa Prisma e grava pedidos no banco.
 
+A autenticacao tambem usa fallback:
+
+- Sem PostgreSQL real, login/cadastro simulam a entrada para manter a interface testavel.
+- Com PostgreSQL real, cadastro cria loja, usuario admin e sessao no banco.
+
 ## Proximas etapas tecnicas
 
 1. Conectar um PostgreSQL real.
 2. Rodar migrations e seed.
-3. Criar autenticacao de usuarios e lojas.
-4. Trocar telas internas para leitura do banco.
-5. Adicionar permissoes de Admin e Atendente.
-6. Configurar upload de imagens de produtos.
-7. Criar integracao com WhatsApp e geracao de recibo.
+3. Proteger rotas internas para exigir login.
+4. Fazer repositorios usarem a loja da sessao, e nao a loja demo.
+5. Criar CRUD funcional de produtos.
+6. Criar gestao real de status de pedidos.
+7. Adicionar permissoes de Admin e Atendente.
+8. Configurar upload de imagens de produtos.
+9. Criar integracao com WhatsApp e geracao de recibo.
 
 ## Backup remoto
 

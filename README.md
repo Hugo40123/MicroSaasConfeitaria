@@ -19,6 +19,8 @@ MVP inicial de um sistema SaaS para pequenas confeitarias, com painel da loja e 
 - `/app/financeiro`: caixa simples
 - `/app/relatorios`: relatorios
 - `/app/configuracoes`: dados da loja e venda online
+- `/login`: entrada do usuario da loja
+- `/cadastro`: cadastro inicial da loja
 - `/loja/doce-maria`: portal publico do cliente
 - `/pedido/BM-1042`: acompanhamento do pedido
 - `/api/orders`: endpoint REST de pedidos com fallback mock/Prisma
@@ -51,6 +53,14 @@ npm run db:seed
 ## Proxima etapa
 
 Conectar autenticacao e trocar as telas internas para leitura do banco real usando Prisma.
+
+## Resumo leigo das funcoes atuais
+
+- A loja consegue ver um painel com resumo de pedidos.
+- O cliente consegue acessar um cardapio publico e enviar pedido.
+- O pedido entra como aguardando confirmacao.
+- O sistema ja esta preparado para gravar pedidos e produtos no PostgreSQL.
+- Agora tambem existe base de cadastro/login para a loja, com sessao segura quando houver banco real.
 
 ## Versionamento
 

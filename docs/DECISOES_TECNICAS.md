@@ -17,10 +17,16 @@ No runtime, o Prisma Client usa `@prisma/adapter-pg`. Enquanto `DATABASE_URL` es
 ## Estrutura de rotas
 
 - `src/app/app`: painel interno da loja.
+- `src/app/login`: entrada do usuario.
+- `src/app/cadastro`: cadastro inicial de loja e admin.
 - `src/app/loja/[slug]`: portal publico do cliente.
 - `src/app/pedido/[codigo]`: acompanhamento publico de pedido.
 - `src/app/api`: endpoints REST.
 
+## Autenticacao
+
+A base de autenticacao usa senha com hash via `crypto.scrypt`, cookie HTTP-only e tabela `Session`. Sem banco real, as rotas de login/cadastro usam modo mock para manter o fluxo testavel.
+
 ## Estado atual
 
-A interface esta funcional com dados mockados e a API de pedidos ja tem fallback para Prisma/PostgreSQL. O proximo passo e conectar as telas internas ao banco real e adicionar autenticacao.
+A interface esta funcional com fallback mock/Prisma para pedidos e produtos. Tambem existe base de cadastro/login. O proximo passo e proteger o painel e fazer os dados internos dependerem da loja logada.
