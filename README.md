@@ -61,7 +61,7 @@ Para detalhes de banco local, banco remoto e deploy de migrations, consulte `doc
 
 ## Proxima etapa
 
-Salvar configuracoes reais da loja no banco.
+Criar pedido interno pelo painel.
 
 ## Resumo leigo das funcoes atuais
 
@@ -78,6 +78,7 @@ Salvar configuracoes reais da loja no banco.
 - Usuarios `ADMIN` acessam produtos, financeiro, relatorios e configuracoes.
 - Usuarios `ATTENDANT` acessam operacao diaria: resumo, pedidos, agenda, clientes e portal.
 - Produtos aceitam upload local de imagem JPG, PNG ou WebP ate 2 MB, salva em `public/uploads/products`.
+- Configuracoes da loja salvam nome, slug publico, telefone, WhatsApp, endereco e regras de venda online no banco.
 
 ## Acessos de desenvolvimento
 

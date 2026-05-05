@@ -108,17 +108,20 @@ A autenticacao tambem usa fallback:
   - imagens JPG, PNG e WebP ate 2 MB;
   - arquivos locais em `public/uploads/products`;
   - URL salva em `Product.imageUrl` e exibida no painel e no portal.
+- Configuracoes reais:
+  - `src/lib/store-settings.ts` centraliza leitura de configuracoes da loja;
+  - `src/lib/store-actions.ts` salva dados e valida slug unico;
+  - sem PostgreSQL real, a tela fica em modo leitura com dados mockados.
 
 ## Proximas etapas tecnicas
 
 1. Conectar o PostgreSQL local/remoto seguindo `docs/BANCO_DE_DADOS.md`.
 2. Rodar migrations e seed.
-3. Salvar configuracoes reais da loja.
-4. Criar pedido interno pelo painel.
-5. Listar clientes reais do banco.
-6. Criar agenda real de producao.
-7. Criar financeiro real.
-8. Criar integracao com WhatsApp e geracao de recibo.
+3. Criar pedido interno pelo painel.
+4. Listar clientes reais do banco.
+5. Criar agenda real de producao.
+6. Criar financeiro real.
+7. Criar integracao com WhatsApp e geracao de recibo.
 
 ## Backup remoto
 
