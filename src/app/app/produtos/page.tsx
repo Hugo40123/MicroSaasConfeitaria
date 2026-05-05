@@ -1,16 +1,24 @@
-import { formatCurrency, products } from "@/lib/sample-data";
+import { listProductsForCurrentStore } from "@/lib/product-repository";
+import { formatCurrency } from "@/lib/sample-data";
 import { Eye, EyeOff, Plus, Search } from "lucide-react";
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const productsResult = await listProductsForCurrentStore();
+  const products = productsResult.data;
+
   return (
     <>
       <header className="page-head">
         <div>
           <p className="eyebrow">Produtos</p>
-          <h1>Cardápio organizado para vender no balcão e online.</h1>
+          <h1>Cardapio organizado para vender no balcao e online.</h1>
           <p className="lead">
-            Controle preço, prazo de preparo, disponibilidade no portal do cliente e
+            Controle preco, prazo de preparo, disponibilidade no portal do cliente e
             itens extras para encomendas personalizadas.
+          </p>
+          <p className="muted" style={{ marginTop: "0.75rem" }}>
+            Fonte dos produtos:{" "}
+            {productsResult.source === "database" ? "PostgreSQL" : "dados de exemplo"}
           </p>
         </div>
         <div className="actions">
@@ -70,7 +78,7 @@ export default function ProductsPage() {
               <tr>
                 <th>Produto</th>
                 <th>Categoria</th>
-                <th>Preço</th>
+                <th>Preco</th>
                 <th>Preparo</th>
                 <th>Portal</th>
                 <th>Status</th>
@@ -90,7 +98,7 @@ export default function ProductsPage() {
                   <td>{product.preparationTime}</td>
                   <td>
                     <span className={`badge ${product.online ? "ready" : "neutral"}`}>
-                      {product.online ? "Visível" : "Oculto"}
+                      {product.online ? "Visivel" : "Oculto"}
                     </span>
                   </td>
                   <td>

@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCurrency, products, store, type Product } from "@/lib/sample-data";
+import { formatCurrency, store, type Product } from "@/lib/sample-data";
 import {
   CalendarDays,
   CheckCircle2,
@@ -24,7 +24,13 @@ type CreatedOrder = {
 
 const categories = ["Todos", "Bolos inteiros", "Fatias", "Doces", "Extras"] as const;
 
-export function PublicStorefront() {
+export function PublicStorefront({
+  products,
+  source
+}: {
+  products: Product[];
+  source: "database" | "mock";
+}) {
   const [activeCategory, setActiveCategory] =
     useState<(typeof categories)[number]>("Todos");
   const [cart, setCart] = useState<Record<string, CartItem>>({});
@@ -173,6 +179,9 @@ export function PublicStorefront() {
             <p className="eyebrow">Cardapio online</p>
             <h1>{store.name}</h1>
             <p>{store.description}</p>
+            <p className="muted" style={{ color: "rgba(255, 255, 255, 0.8)", marginTop: "0.75rem" }}>
+              Cardapio: {source === "database" ? "PostgreSQL" : "dados de exemplo"}
+            </p>
           </div>
         </div>
 
