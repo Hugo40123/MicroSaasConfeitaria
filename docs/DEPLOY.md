@@ -47,6 +47,7 @@ npm run db:verify
 Antes de publicar:
 
 ```bash
+npm run homologation:check
 npm run typecheck
 npm run build
 ```

@@ -185,6 +185,12 @@ npm run typecheck
 npm run build
 ```
 
+Antes de homologar com banco/storage reais:
+
+```bash
+npm run homologation:check
+```
+
 ## Deploy
 
 Use `docs/DEPLOY.md` para publicar com PostgreSQL remoto. Antes de deploy, rode

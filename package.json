@@ -13,6 +13,7 @@
     "prisma:studio": "prisma studio",
     "db:seed": "node prisma/seed.mjs",
     "db:verify": "node scripts/verify-db.mjs",
+    "homologation:check": "node scripts/homologation-check.mjs",
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
