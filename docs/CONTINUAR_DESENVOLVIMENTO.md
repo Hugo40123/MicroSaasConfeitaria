@@ -121,14 +121,17 @@ A autenticacao tambem usa fallback:
   - `src/lib/customer-repository.ts` lista clientes da loja com contagem de pedidos;
   - `src/lib/customer-actions.ts` edita nome, WhatsApp, endereco e notas por `storeId`;
   - sem PostgreSQL real, a tela usa dados mockados e bloqueia edicao.
+- Agenda real:
+  - `src/lib/agenda-repository.ts` lista pedidos pendentes futuros da loja;
+  - `/app/agenda` mostra timeline de hoje ou proximos pedidos;
+  - pedidos entregues e cancelados saem da agenda.
 
 ## Proximas etapas tecnicas
 
 1. Conectar o PostgreSQL local/remoto seguindo `docs/BANCO_DE_DADOS.md`.
 2. Rodar migrations e seed.
-3. Criar agenda real de producao.
-4. Criar financeiro real.
-5. Criar integracao com WhatsApp e geracao de recibo.
+3. Criar financeiro real.
+4. Criar integracao com WhatsApp e geracao de recibo.
 
 ## Backup remoto
 

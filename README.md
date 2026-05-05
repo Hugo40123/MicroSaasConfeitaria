@@ -61,7 +61,7 @@ Para detalhes de banco local, banco remoto e deploy de migrations, consulte `doc
 
 ## Proxima etapa
 
-Criar agenda real de producao.
+Criar financeiro real.
 
 ## Resumo leigo das funcoes atuais
 
@@ -81,6 +81,7 @@ Criar agenda real de producao.
 - Configuracoes da loja salvam nome, slug publico, telefone, WhatsApp, endereco e regras de venda online no banco.
 - Pedidos internos podem ser criados pelo painel usando produtos ativos da loja.
 - Clientes agora sao listados do banco, com contagem de pedidos e edicao basica por loja.
+- Agenda de producao usa pedidos reais pendentes por data e horario.
 
 ## Acessos de desenvolvimento
 
