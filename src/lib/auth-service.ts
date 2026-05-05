@@ -25,6 +25,26 @@ function makeMockUser(email: string, name = "Admin Demo", storeName = "Doce Mari
   };
 }
 
+function mapUserToAuthUser(user: {
+  id: string;
+  name: string;
+  email: string;
+  role: AuthUser["role"];
+  storeId: string;
+  store: {
+    name: string;
+  };
+}): AuthUser {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    storeId: user.storeId,
+    storeName: user.store.name
+  };
+}
+
 export async function registerStoreOwner(input: {
   storeName: string;
   storeSlug: string;
@@ -81,14 +101,7 @@ export async function registerStoreOwner(input: {
   });
 
   return {
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      storeId: user.storeId,
-      storeName: user.store.name
-    },
+    user: mapUserToAuthUser(user),
     token,
     source: "database"
   };
@@ -132,17 +145,46 @@ export async function loginStoreUser(input: {
   });
 
   return {
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      storeId: user.storeId,
-      storeName: user.store.name
-    },
+    user: mapUserToAuthUser(user),
     token,
     source: "database"
   };
+}
+
+export async function getCurrentAuthUser(token: string | undefined) {
+  if (!token) return null;
+
+  if (!isDatabaseConfigured()) {
+    return makeMockUser("admin@demo.local");
+  }
+
+  const prisma = getPrismaClient();
+  const session = await prisma.session.findUnique({
+    where: {
+      tokenHash: hashSessionToken(token)
+    },
+    include: {
+      user: {
+        include: {
+          store: true
+        }
+      }
+    }
+  });
+
+  if (!session) return null;
+
+  if (session.expiresAt <= new Date()) {
+    await prisma.session.deleteMany({
+      where: {
+        id: session.id
+      }
+    });
+
+    return null;
+  }
+
+  return mapUserToAuthUser(session.user);
 }
 
 export async function logoutSession(token: string | undefined) {

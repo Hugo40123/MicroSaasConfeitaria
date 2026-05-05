@@ -6,6 +6,7 @@ import {
   CalendarDays,
   ClipboardList,
   Home,
+  LogOut,
   Package,
   Settings,
   Store,
@@ -13,7 +14,9 @@ import {
   WalletCards
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import type { AuthUser } from "@/lib/auth";
 
 const navItems = [
   { href: "/app", label: "Resumo", icon: Home },
@@ -27,8 +30,29 @@ const navItems = [
   { href: "/app/configuracoes", label: "Ajustes", icon: Settings }
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  user
+}: {
+  children: React.ReactNode;
+  user: AuthUser;
+}) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  async function logout() {
+    setLoggingOut(true);
+
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST"
+      });
+    } finally {
+      router.push("/login");
+      router.refresh();
+    }
+  }
 
   return (
     <div className="app-shell">
@@ -60,6 +84,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
+
+        <div className="sidebar-footer">
+          <div className="user-pill">
+            <span className="user-avatar">{user.name.slice(0, 1).toUpperCase()}</span>
+            <span>
+              <strong>{user.storeName}</strong>
+              <span>{user.name}</span>
+            </span>
+          </div>
+          <button
+            aria-label="Sair da conta"
+            className="icon-btn logout-button"
+            disabled={loggingOut}
+            onClick={logout}
+            title="Sair"
+            type="button"
+          >
+            <LogOut aria-hidden="true" />
+          </button>
+        </div>
       </aside>
 
       <main className="main-area">{children}</main>

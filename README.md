@@ -52,7 +52,7 @@ npm run db:seed
 
 ## Proxima etapa
 
-Conectar autenticacao e trocar as telas internas para leitura do banco real usando Prisma.
+Fazer produtos e pedidos usarem a loja do usuario logado, em vez da loja demo.
 
 ## Resumo leigo das funcoes atuais
 
@@ -61,6 +61,7 @@ Conectar autenticacao e trocar as telas internas para leitura do banco real usan
 - O pedido entra como aguardando confirmacao.
 - O sistema ja esta preparado para gravar pedidos e produtos no PostgreSQL.
 - Agora tambem existe base de cadastro/login para a loja, com sessao segura quando houver banco real.
+- O painel interno ja exige login e permite sair da conta.
 
 ## Versionamento
 

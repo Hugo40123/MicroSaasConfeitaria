@@ -166,6 +166,64 @@ button:disabled {
   color: var(--rose);
 }
 
+.sidebar-footer {
+  display: flex;
+  min-width: max-content;
+  align-items: center;
+  gap: 0.55rem;
+  margin-left: auto;
+}
+
+.user-pill {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  padding: 0.4rem 0.55rem;
+}
+
+.user-pill > span:last-child {
+  display: grid;
+  gap: 0.05rem;
+  max-width: 9.5rem;
+}
+
+.user-pill strong,
+.user-pill span span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-pill strong {
+  font-size: 0.82rem;
+  line-height: 1.1;
+}
+
+.user-pill span span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.user-avatar {
+  display: grid;
+  width: 1.85rem;
+  height: 1.85rem;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--mint-soft);
+  color: var(--mint);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.logout-button {
+  flex: 0 0 auto;
+}
+
 .main-area {
   width: 100%;
   max-width: 1180px;
@@ -765,6 +823,17 @@ th {
     display: grid;
     gap: 0.25rem;
     min-width: 0;
+  }
+
+  .sidebar-footer {
+    width: 100%;
+    min-width: 0;
+    margin: 1.5rem 0 0;
+  }
+
+  .user-pill {
+    min-width: 0;
+    flex: 1;
   }
 
   .store-layout {

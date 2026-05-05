@@ -25,8 +25,8 @@ No runtime, o Prisma Client usa `@prisma/adapter-pg`. Enquanto `DATABASE_URL` es
 
 ## Autenticacao
 
-A base de autenticacao usa senha com hash via `crypto.scrypt`, cookie HTTP-only e tabela `Session`. Sem banco real, as rotas de login/cadastro usam modo mock para manter o fluxo testavel.
+A base de autenticacao usa senha com hash via `crypto.scrypt`, cookie HTTP-only e tabela `Session`. Sem banco real, as rotas de login/cadastro usam modo mock para manter o fluxo testavel. O layout de `/app` consulta a sessao atual antes de renderizar o painel e redireciona para `/login` quando a sessao nao existe ou expirou.
 
 ## Estado atual
 
-A interface esta funcional com fallback mock/Prisma para pedidos e produtos. Tambem existe base de cadastro/login. O proximo passo e proteger o painel e fazer os dados internos dependerem da loja logada.
+A interface esta funcional com fallback mock/Prisma para pedidos e produtos. Tambem existe base de cadastro/login e o painel interno ja exige sessao. O proximo passo e fazer os dados internos dependerem da loja logada.
