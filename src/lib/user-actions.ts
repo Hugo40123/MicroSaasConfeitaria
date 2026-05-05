@@ -28,7 +28,7 @@ export async function createAttendantAction(formData: FormData) {
   }
 
   if (!email.includes("@") || email.length < 6) {
-    throw new Error("Informe um e-mail valido.");
+    throw new Error("Informe um e-mail válido.");
   }
 
   if (password.length < 8) {
@@ -71,7 +71,7 @@ export async function changeOwnPasswordAction(formData: FormData) {
 
   const validPassword = await verifyPassword(currentPassword, dbUser.passwordHash);
   if (!validPassword) {
-    throw new Error("Senha atual invalida.");
+    throw new Error("Senha atual inválida.");
   }
 
   await prisma.user.update({

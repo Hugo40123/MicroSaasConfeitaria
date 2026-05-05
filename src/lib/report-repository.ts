@@ -17,10 +17,10 @@ export type ReportSummary = {
 };
 
 const statusLabels = {
-  AWAITING_CONFIRMATION: "Aguardando confirmacao",
+  AWAITING_CONFIRMATION: "Aguardando confirmação",
   CONFIRMED: "Confirmado",
   PENDING: "Pendente",
-  IN_PRODUCTION: "Em producao",
+  IN_PRODUCTION: "Em produção",
   READY: "Pronto",
   OUT_FOR_DELIVERY: "Saiu para entrega",
   DELIVERED: "Entregue",
@@ -46,8 +46,8 @@ export async function getReportsForCurrentStore(storeId: string): Promise<{
           { name: "Brigadeiro Gourmet", quantity: 6 }
         ],
         statusCounts: [
-          { label: "Aguardando confirmacao", value: 1 },
-          { label: "Em producao", value: 1 },
+          { label: "Aguardando confirmação", value: 1 },
+          { label: "Em produção", value: 1 },
           { label: "Confirmado", value: 1 },
           { label: "Pronto", value: 1 }
         ]

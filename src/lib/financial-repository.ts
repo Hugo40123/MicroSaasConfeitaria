@@ -4,7 +4,7 @@ import { orders } from "@/lib/sample-data";
 export type FinancialEntry = {
   id: string;
   date: string;
-  type: "Entrada" | "Saida";
+  type: "Entrada" | "Saída";
   description: string;
   amount: number;
 };
@@ -20,14 +20,14 @@ const mockExpenses: FinancialEntry[] = [
   {
     id: "expense-1",
     date: "Hoje",
-    type: "Saida",
+    type: "Saída",
     description: "Morango e leite condensado",
     amount: 64
   },
   {
     id: "expense-2",
     date: "Hoje",
-    type: "Saida",
+    type: "Saída",
     description: "Embalagens",
     amount: 28
   }
@@ -42,7 +42,7 @@ function makeSummary(transactions: FinancialEntry[]): FinancialSummary {
     .filter((transaction) => transaction.type === "Entrada")
     .reduce((sum, transaction) => sum + transaction.amount, 0);
   const exits = transactions
-    .filter((transaction) => transaction.type === "Saida")
+    .filter((transaction) => transaction.type === "Saída")
     .reduce((sum, transaction) => sum + transaction.amount, 0);
 
   return {
@@ -107,7 +107,7 @@ export async function getFinancialSummary(storeId: string): Promise<{
     ...manualTransactions.map((transaction) => ({
       id: transaction.id,
       date: formatDate(transaction.date),
-      type: transaction.type === "INCOME" ? "Entrada" as const : "Saida" as const,
+      type: transaction.type === "INCOME" ? "Entrada" as const : "Saída" as const,
       description: transaction.description,
       amount: Number(transaction.amount)
     }))

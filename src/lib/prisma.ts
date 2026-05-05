@@ -28,7 +28,7 @@ export function getPrismaClient(): PrismaClient {
   const databaseUrl = getDatabaseUrl();
 
   if (!databaseUrl || !isDatabaseConfigured()) {
-    throw new Error("DATABASE_URL nao esta configurada para um banco real.");
+    throw new Error("DATABASE_URL não está configurada para um banco real.");
   }
 
   if (!globalForPrisma.prisma) {

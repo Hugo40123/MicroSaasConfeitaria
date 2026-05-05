@@ -49,7 +49,7 @@ function formatDate(value: Date | null) {
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
-  if (tomorrow.getTime() === date.getTime()) return "Amanha";
+  if (tomorrow.getTime() === date.getTime()) return "Amanhã";
 
   return new Intl.DateTimeFormat("pt-BR").format(date);
 }

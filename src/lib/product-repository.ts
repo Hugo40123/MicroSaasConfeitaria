@@ -242,7 +242,7 @@ export async function listOnlineProductsForStore(storeSlug: string): Promise<{
       data: [],
       store: {
         ...sampleStore,
-        name: "Loja nao encontrada",
+        name: "Loja não encontrada",
         slug: storeSlug,
         themePrimary: "#d79771",
         themePrimaryStrong: "#734939",

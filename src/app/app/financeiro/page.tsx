@@ -16,9 +16,9 @@ export default async function FinancePage() {
       <header className="page-head">
         <div>
           <p className="eyebrow">Financeiro</p>
-          <h1>Caixa basico para entradas, sinais e despesas.</h1>
+          <h1>Caixa básico para entradas, sinais e despesas.</h1>
           <p className="lead">
-            O foco e dar clareza diaria sem transformar a operacao em contabilidade
+            O foco é dar clareza diária sem transformar a operação em contabilidade
             completa.
           </p>
           <p className="muted" style={{ marginTop: "0.75rem" }}>
@@ -27,7 +27,7 @@ export default async function FinancePage() {
           </p>
           {isMock ? (
             <p className="form-error" style={{ marginTop: "0.9rem" }}>
-              Lancamentos desabilitados enquanto o PostgreSQL real nao estiver
+              Lançamentos desabilitados enquanto o PostgreSQL real não estiver
               configurado.
             </p>
           ) : null}
@@ -35,7 +35,7 @@ export default async function FinancePage() {
         <div className="actions">
           <a className="btn btn-primary" href="#nova-movimentacao">
             <Plus aria-hidden="true" />
-            Nova movimentacao
+            Nova movimentação
           </a>
         </div>
       </header>
@@ -63,7 +63,7 @@ export default async function FinancePage() {
 
       <section className="panel" id="nova-movimentacao" style={{ marginTop: "1rem" }}>
         <div className="section-head">
-          <h2>Nova movimentacao</h2>
+          <h2>Nova movimentação</h2>
         </div>
         <form action={createFinancialTransactionAction} className="product-form">
           <div className="form-grid">
@@ -71,7 +71,7 @@ export default async function FinancePage() {
               <span>Tipo</span>
               <select className="select" disabled={isMock} name="type">
                 <option value="INCOME">Entrada</option>
-                <option value="EXPENSE">Saida</option>
+                <option value="EXPENSE">Saída</option>
               </select>
             </label>
             <label className="field">
@@ -92,7 +92,7 @@ export default async function FinancePage() {
             </label>
           </div>
           <label className="field">
-            <span>Descricao</span>
+            <span>Descrição</span>
             <input className="input" disabled={isMock} name="description" required />
           </label>
           <div className="actions">
@@ -106,7 +106,7 @@ export default async function FinancePage() {
 
       <section className="panel" style={{ marginTop: "1rem" }}>
         <div className="section-head">
-          <h2>Movimentacoes recentes</h2>
+          <h2>Movimentações recentes</h2>
         </div>
         <div className="table-wrap">
           <table>

@@ -44,7 +44,7 @@ export function ProductImageInput({ disabled }: { disabled: boolean }) {
         }}
         type="file"
       />
-      <small className="field-hint">JPG, PNG ou WebP ate 2 MB.</small>
+      <small className="field-hint">JPG, PNG ou WebP até 2 MB.</small>
       {error ? <span className="field-error">{error}</span> : null}
     </label>
   );

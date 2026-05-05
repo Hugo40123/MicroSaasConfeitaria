@@ -11,11 +11,11 @@ export default async function ForbiddenPage() {
         <ShieldAlert />
       </span>
       <div>
-        <p className="eyebrow">Sem permissao</p>
-        <h1>Seu usuario nao acessa esta area.</h1>
+        <p className="eyebrow">Sem permissão</p>
+        <h1>Seu usuário não acessa esta área.</h1>
         <p className="lead">
-          Peça para um administrador da loja liberar a funcao ou executar essa
-          alteracao por uma conta admin.
+          Peça para um administrador da loja liberar a função ou executar essa
+          alteração por uma conta admin.
         </p>
       </div>
       <Link className="btn btn-primary" href="/app/pedidos">

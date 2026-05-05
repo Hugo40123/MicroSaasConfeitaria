@@ -51,7 +51,7 @@ async function login(email, password) {
   assert(response.status === 200, `Login falhou para ${email}: ${response.status} ${text}`);
 
   const cookie = getSetCookie(response);
-  assert(cookie.includes("confeitaria_session="), `Cookie de sessao nao retornou para ${email}.`);
+  assert(cookie.includes("confeitaria_session="), `Cookie de sessão não retornou para ${email}.`);
 
   return cookie;
 }
@@ -97,7 +97,7 @@ async function createPortalOrder() {
 
   const result = JSON.parse(text);
   const code = result.data?.code;
-  assert(code, "API de pedido nao retornou codigo.");
+  assert(code, "API de pedido não retornou código.");
 
   await expectOk(`/pedido/${code}`, "", "Acompanhamento do pedido criado");
 
@@ -113,7 +113,7 @@ async function main() {
     `Healthcheck retornou status inesperado: ${health.response.status}.`
   );
   await expectOk("/login", "", "Login page");
-  await expectOk("/loja/doce-maria", "", "Portal publico");
+  await expectOk("/loja/doce-maria", "", "Portal público");
 
   const createdOrderCode = shouldCreateOrder ? await createPortalOrder() : null;
 
@@ -124,10 +124,10 @@ async function main() {
   if (createdOrderCode) {
     assert(
       ordersText.includes(createdOrderCode),
-      "Pedido criado pelo smoke nao apareceu no painel de pedidos."
+      "Pedido criado pelo smoke não apareceu no painel de pedidos."
     );
   }
-  await expectOk("/app/configuracoes", adminCookie, "Configuracoes admin");
+  await expectOk("/app/configuracoes", adminCookie, "Configurações admin");
 
   const attendantCookie = await login(attendantEmail, attendantPassword);
   await expectOk("/app/pedidos", attendantCookie, "Pedidos atendente");
@@ -135,8 +135,8 @@ async function main() {
     redirect: "follow"
   });
   assert(
-    forbiddenText.includes("Sem permissao"),
-    "Atendente deveria ver a tela de sem permissao ao acessar produtos."
+    forbiddenText.includes("Sem permissão"),
+    "Atendente deveria ver a tela de sem permissão ao acessar produtos."
   );
 
   console.log("Smoke test concluido com sucesso.");

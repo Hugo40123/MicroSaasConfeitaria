@@ -22,7 +22,7 @@ function parseOrderStatus(formData: FormData) {
   const status = getString(formData, "status") as DatabaseOrderStatus;
 
   if (!allowedStatuses.has(status)) {
-    throw new Error("Status de pedido invalido.");
+    throw new Error("Status de pedido inválido.");
   }
 
   return status;
@@ -32,7 +32,7 @@ function parseRequiredString(formData: FormData, field: string, label: string) {
   const value = getString(formData, field);
 
   if (!value) {
-    throw new Error(`${label} e obrigatorio.`);
+    throw new Error(`${label} é obrigatório.`);
   }
 
   return value;
@@ -73,7 +73,7 @@ export async function updateOrderStatusAction(formData: FormData) {
   const status = parseOrderStatus(formData);
 
   if (!orderId) {
-    throw new Error("Pedido invalido.");
+    throw new Error("Pedido inválido.");
   }
 
   const prisma = getPrismaClient();
@@ -88,7 +88,7 @@ export async function updateOrderStatusAction(formData: FormData) {
   });
 
   if (!order) {
-    throw new Error("Pedido nao encontrado para esta loja.");
+    throw new Error("Pedido não encontrado para esta loja.");
   }
 
   await prisma.order.update({
@@ -125,7 +125,7 @@ export async function createInternalOrderAction(formData: FormData) {
   const quantity = parseQuantity(formData);
 
   if (customerPhone.length < 10) {
-    throw new Error("Informe um telefone valido.");
+    throw new Error("Informe um telefone válido.");
   }
 
   const data = await prisma.$transaction(async (tx) => {
@@ -138,7 +138,7 @@ export async function createInternalOrderAction(formData: FormData) {
     });
 
     if (!product) {
-      throw new Error("Produto nao encontrado para esta loja.");
+      throw new Error("Produto não encontrado para esta loja.");
     }
 
     const unitPrice = Number(product.basePrice);

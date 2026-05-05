@@ -20,7 +20,7 @@ function parseAmount(formData: FormData) {
 
 function ensureDatabaseConfigured() {
   if (!isDatabaseConfigured()) {
-    throw new Error("Configure um PostgreSQL real para salvar movimentacoes.");
+    throw new Error("Configure um PostgreSQL real para salvar movimentações.");
   }
 }
 
@@ -33,7 +33,7 @@ export async function createFinancialTransactionAction(formData: FormData) {
   const date = getString(formData, "date");
 
   if (description.length < 3) {
-    throw new Error("Informe uma descricao.");
+    throw new Error("Informe uma descrição.");
   }
 
   await getPrismaClient().financialTransaction.create({

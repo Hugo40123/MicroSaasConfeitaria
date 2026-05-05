@@ -207,7 +207,7 @@ export function PublicStorefront({
   if (createdOrder) {
     const whatsappHref = makeStoreWhatsAppHref(
       store.phone,
-      `Ola! Acabei de enviar o pedido ${createdOrder.code} pelo cardapio online.`
+      `Olá! Acabei de enviar o pedido ${createdOrder.code} pelo cardápio online.`
     );
 
     return (
@@ -438,7 +438,7 @@ export function PublicStorefront({
 
           {cartItems.length === 0 ? (
             <div className="empty-state">
-              <p className="muted">Seu carrinho ainda esta vazio.</p>
+              <p className="muted">Seu carrinho ainda está vazio.</p>
               <button className="btn btn-primary" onClick={() => setStep("menu")} type="button">
                 Ver cardápio
               </button>

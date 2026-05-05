@@ -56,7 +56,7 @@ export const store = {
   phone: "(11) 99999-2323",
   address: "Rua das Flores, 120 - Centro",
   description:
-    "Bolos caseiros, fatias prontas e encomendas personalizadas com confirmacao rapida pelo WhatsApp."
+    "Bolos caseiros, fatias prontas e encomendas personalizadas com confirmação rápida pelo WhatsApp."
 };
 
 export const products: Product[] = [
@@ -175,7 +175,7 @@ export const orders: Order[] = [
     whatsapp: "(11) 96666-3303",
     source: "Portal do cliente",
     items: ["Bolo Red Velvet"],
-    deliveryDate: "Amanha",
+    deliveryDate: "Amanhã",
     deliveryTime: "10:00",
     fulfillment: "Retirada",
     paymentMethod: "Cartão",

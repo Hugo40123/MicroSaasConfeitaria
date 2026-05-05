@@ -14,11 +14,11 @@ export default async function AgendaPage() {
     <>
       <header className="page-head">
         <div>
-          <p className="eyebrow">Agenda de producao</p>
-          <h1>Volume do dia separado por horario e entrega.</h1>
+          <p className="eyebrow">Agenda de produção</p>
+          <h1>Volume do dia separado por horário e entrega.</h1>
           <p className="lead">
-            A equipe ve rapidamente o que preparar, o que ja esta pronto e quais
-            encomendas ainda precisam de confirmacao.
+            A equipe vê rapidamente o que preparar, o que já está pronto e quais
+            encomendas ainda precisam de confirmação.
           </p>
           <p className="muted" style={{ marginTop: "0.75rem" }}>
             Fonte da agenda:{" "}
@@ -33,7 +33,7 @@ export default async function AgendaPage() {
             <CalendarDays aria-hidden="true" />
             Hoje
           </button>
-          <button className="icon-btn" title="Proximo dia" type="button">
+          <button className="icon-btn" title="Próximo dia" type="button">
             <ChevronRight aria-hidden="true" />
           </button>
         </div>
@@ -69,7 +69,7 @@ export default async function AgendaPage() {
               </div>
             ))}
             {timeline.length === 0 ? (
-              <p className="muted">Nenhuma producao pendente para os proximos dias.</p>
+              <p className="muted">Nenhuma produção pendente para os próximos dias.</p>
             ) : null}
           </div>
         </div>

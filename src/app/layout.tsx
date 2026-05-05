@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Confeitaria SaaS",
-  description: "Gestao simples de pedidos, producao e cardapio online para confeitarias."
+  description: "Gestão simples de pedidos, produção e cardápio online para confeitarias."
 };
 
 export default function RootLayout({

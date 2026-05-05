@@ -29,7 +29,7 @@ function fail(message) {
 for (const name of required) {
   const value = process.env[name]?.trim();
   if (isPlaceholder(name, value)) {
-    fail(`${name} nao esta configurada para homologacao.`);
+    fail(`${name} não está configurada para homologação.`);
   }
 }
 
@@ -48,5 +48,5 @@ if (storageDriver && storageDriver !== "local" && storageDriver !== "supabase") 
 }
 
 if (!process.exitCode) {
-  console.log("Configuracao de homologacao pronta.");
+  console.log("Configuração de homologação pronta.");
 }

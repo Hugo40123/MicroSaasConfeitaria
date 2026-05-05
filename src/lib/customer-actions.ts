@@ -25,7 +25,7 @@ export async function updateCustomerAction(formData: FormData) {
   const notes = getString(formData, "notes");
 
   if (!customerId) {
-    throw new Error("Cliente invalido.");
+    throw new Error("Cliente inválido.");
   }
 
   if (name.length < 2) {

@@ -49,14 +49,14 @@ export function AuthForm({ mode }: { mode: AuthFormMode }) {
         const issues = Array.isArray(result.error?.issues)
           ? result.error.issues.join(" ")
           : result.error?.message;
-        setError(issues || "Nao foi possivel continuar.");
+        setError(issues || "Não foi possível continuar.");
         return;
       }
 
       router.push("/app");
       router.refresh();
     } catch {
-      setError("Nao foi possivel conectar com o servidor.");
+      setError("Não foi possível conectar com o servidor.");
     } finally {
       setLoading(false);
     }
@@ -78,8 +78,8 @@ export function AuthForm({ mode }: { mode: AuthFormMode }) {
           <h1>{isRegister ? "Comece sua loja online." : "Acesse o painel da loja."}</h1>
           <p className="lead">
             {isRegister
-              ? "Cadastre a confeitaria e crie o usuario administrador."
-              : "Entre para gerenciar pedidos, produtos, clientes e producao."}
+              ? "Cadastre a confeitaria e crie o usuário administrador."
+              : "Entre para gerenciar pedidos, produtos, clientes e produção."}
           </p>
         </div>
 
@@ -116,7 +116,7 @@ export function AuthForm({ mode }: { mode: AuthFormMode }) {
 
           <Link className="btn btn-secondary" href={isRegister ? "/login" : "/cadastro"}>
             <CakeSlice aria-hidden="true" />
-            {isRegister ? "Ja tenho conta" : "Criar nova loja"}
+            {isRegister ? "Já tenho conta" : "Criar nova loja"}
           </Link>
         </form>
       </section>

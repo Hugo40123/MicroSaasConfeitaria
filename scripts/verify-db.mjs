@@ -6,7 +6,7 @@ const placeholderUrl = "postgresql://user:password@localhost:5432";
 const databaseUrl = process.env.DATABASE_URL?.trim();
 
 if (!databaseUrl || databaseUrl.startsWith(placeholderUrl)) {
-  console.error("DATABASE_URL nao aponta para um PostgreSQL real.");
+  console.error("DATABASE_URL não aponta para um PostgreSQL real.");
   process.exit(1);
 }
 

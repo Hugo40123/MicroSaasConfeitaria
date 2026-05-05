@@ -1,10 +1,10 @@
 import type { OrderStatus } from "@/lib/sample-data";
 
 const statusCopy: Record<OrderStatus, string> = {
-  aguardando_confirmacao: "Aguardando confirmacao",
+  aguardando_confirmacao: "Aguardando confirmação",
   confirmado: "Confirmado",
   pendente: "Pendente",
-  em_producao: "Em producao",
+  em_producao: "Em produção",
   pronto: "Pronto",
   saiu_para_entrega: "Saiu para entrega",
   entregue: "Entregue",

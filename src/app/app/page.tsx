@@ -30,7 +30,7 @@ export default async function DashboardPage() {
       <header className="page-head">
         <div>
           <p className="eyebrow">Resumo do dia</p>
-          <h1>Pedidos, producao e caixa em uma tela so.</h1>
+          <h1>Pedidos, produção e caixa em uma tela só.</h1>
           <p className="lead">
             A loja ve o que precisa confirmar, produzir e entregar sem depender de
             caderno ou conversa perdida no WhatsApp.
@@ -66,7 +66,7 @@ export default async function DashboardPage() {
           icon={Clock3}
         />
         <MetricCard
-          label="Em producao"
+          label="Em produção"
           value={String(production.length)}
           detail="Acompanhe a agenda"
           icon={PackageCheck}
@@ -82,7 +82,7 @@ export default async function DashboardPage() {
       <section className="split" style={{ marginTop: "1rem" }}>
         <div className="panel">
           <div className="section-head">
-            <h2>Pedidos que pedem atencao</h2>
+            <h2>Pedidos que pedem atenção</h2>
             <Link href="/app/pedidos" className="icon-btn" title="Abrir pedidos">
               <Plus aria-hidden="true" />
             </Link>
@@ -96,7 +96,7 @@ export default async function DashboardPage() {
                       {order.code} - {order.customer}
                     </p>
                     <p className="item-subtitle">
-                      {order.items.join(", ")} - {order.deliveryDate} as{" "}
+                      {order.items.join(", ")} - {order.deliveryDate} às{" "}
                       {order.deliveryTime}
                     </p>
                   </div>
@@ -114,7 +114,7 @@ export default async function DashboardPage() {
 
         <div className="panel">
           <div className="section-head">
-            <h2>Agenda de producao</h2>
+            <h2>Agenda de produção</h2>
             <Link href="/app/agenda" className="btn btn-secondary">
               Abrir agenda
             </Link>

@@ -14,7 +14,7 @@ export default async function CustomersPage() {
       <header className="page-head">
         <div>
           <p className="eyebrow">Clientes</p>
-          <h1>Historico simples por nome, telefone e WhatsApp.</h1>
+          <h1>Histórico simples por nome, telefone e WhatsApp.</h1>
           <p className="lead">
             Clientes do portal e pedidos internos ficam no mesmo cadastro da loja.
           </p>
@@ -24,7 +24,7 @@ export default async function CustomersPage() {
           </p>
           {isMock ? (
             <p className="form-error" style={{ marginTop: "0.9rem" }}>
-              Edicao de clientes desabilitada enquanto o PostgreSQL real nao estiver
+              Edição de clientes desabilitada enquanto o PostgreSQL real não estiver
               configurado.
             </p>
           ) : null}
@@ -34,7 +34,7 @@ export default async function CustomersPage() {
       <section className="panel">
         <div className="search-row">
           <label className="field">
-            <span>Busca rapida</span>
+            <span>Busca rápida</span>
             <span style={{ position: "relative" }}>
               <Search
                 aria-hidden="true"
@@ -62,7 +62,7 @@ export default async function CustomersPage() {
               <tr>
                 <th>Cliente</th>
                 <th>Telefone</th>
-                <th>Endereco</th>
+                <th>Endereço</th>
                 <th>Pedidos</th>
                 <th>WhatsApp</th>
               </tr>
@@ -75,7 +75,7 @@ export default async function CustomersPage() {
                     <p className="muted">{customer.notes || "Sem notas"}</p>
                   </td>
                   <td>{customer.phone}</td>
-                  <td>{customer.address || "Nao informado"}</td>
+                  <td>{customer.address || "Não informado"}</td>
                   <td>{customer.orderCount}</td>
                   <td>
                     <a
@@ -127,7 +127,7 @@ export default async function CustomersPage() {
                     />
                   </label>
                   <label className="field">
-                    <span>Endereco</span>
+                    <span>Endereço</span>
                     <input
                       className="input"
                       defaultValue={customer.address}

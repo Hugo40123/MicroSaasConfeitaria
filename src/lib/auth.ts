@@ -52,7 +52,7 @@ export function validateRegisterPayload(payload: unknown) {
 
   if (storeName.length < 2) issues.push("Informe o nome da loja.");
   if (name.length < 2) issues.push("Informe seu nome.");
-  if (!email.includes("@") || email.length < 6) issues.push("Informe um e-mail valido.");
+  if (!email.includes("@") || email.length < 6) issues.push("Informe um e-mail válido.");
   if (password.length < 8) issues.push("A senha precisa ter pelo menos 8 caracteres.");
 
   if (issues.length > 0) throw new AuthValidationError(issues);
@@ -73,7 +73,7 @@ export function validateLoginPayload(payload: unknown) {
   const password = normalizeText(record.password);
   const issues: string[] = [];
 
-  if (!email.includes("@") || email.length < 6) issues.push("Informe um e-mail valido.");
+  if (!email.includes("@") || email.length < 6) issues.push("Informe um e-mail válido.");
   if (password.length < 1) issues.push("Informe a senha.");
 
   if (issues.length > 0) throw new AuthValidationError(issues);

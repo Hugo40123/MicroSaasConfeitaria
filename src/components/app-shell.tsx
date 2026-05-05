@@ -33,7 +33,7 @@ const baseNavItems: NavItem[] = [
   { href: "/app/produtos", label: "Produtos", icon: Package, permission: "manage_products" },
   { href: "/app/clientes", label: "Clientes", icon: Users },
   { href: "/app/financeiro", label: "Financeiro", icon: WalletCards, permission: "view_finance" },
-  { href: "/app/relatorios", label: "Relatorios", icon: BarChart3, permission: "view_reports" },
+  { href: "/app/relatorios", label: "Relatórios", icon: BarChart3, permission: "view_reports" },
   { href: "/app/configuracoes", label: "Ajustes", icon: Settings, permission: "manage_settings" }
 ];
 

@@ -22,7 +22,7 @@ function parseRequiredString(formData: FormData, field: string, label: string) {
   const value = getString(formData, field);
 
   if (!value) {
-    throw new Error(`${label} e obrigatorio.`);
+    throw new Error(`${label} é obrigatório.`);
   }
 
   return value;
@@ -45,7 +45,7 @@ function parseOptionalMoney(formData: FormData, field: string, label: string) {
 
   const value = Number(rawValue.replace(",", "."));
   if (!Number.isFinite(value) || value < 0) {
-    throw new Error(`${label} nao pode ser negativo.`);
+    throw new Error(`${label} não pode ser negativo.`);
   }
 
   return Math.round(value * 100) / 100;
@@ -67,7 +67,7 @@ function parseProductCategory(formData: FormData) {
   const category = getString(formData, "category") as ProductCategoryValue;
 
   if (!productCategories.has(category)) {
-    throw new Error("Categoria invalida.");
+    throw new Error("Categoria inválida.");
   }
 
   return category;
@@ -88,7 +88,7 @@ async function parseProductForm(formData: FormData) {
     name: parseRequiredString(formData, "name", "Nome"),
     category: parseProductCategory(formData),
     description: getString(formData, "description") || null,
-    basePrice: parseMoney(formData, "basePrice", "Preco"),
+    basePrice: parseMoney(formData, "basePrice", "Preço"),
     cost: parseOptionalMoney(formData, "cost", "Custo"),
     preparationHours: parseOptionalInt(
       formData,
@@ -122,7 +122,7 @@ function getActionErrorMessage(error: unknown) {
     return error.message;
   }
 
-  return "Nao foi possivel salvar o produto. Tente novamente.";
+  return "Não foi possível salvar o produto. Tente novamente.";
 }
 
 function redirectWithProductError(error: unknown): never {

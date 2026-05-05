@@ -14,7 +14,7 @@ function parseColor(formData: FormData, field: string, fallback: string) {
 
   if (!value) return fallback;
   if (!/^#[0-9a-f]{6}$/i.test(value)) {
-    throw new Error("Informe cores em formato hexadecimal valido.");
+    throw new Error("Informe cores em formato hexadecimal válido.");
   }
 
   return value.toLowerCase();
@@ -32,7 +32,7 @@ function parseStoreSettings(formData: FormData) {
   }
 
   if (publicSlug.length < 2) {
-    throw new Error("Informe um link publico valido.");
+    throw new Error("Informe um link público válido.");
   }
 
   return {
@@ -54,7 +54,7 @@ function parseStoreSettings(formData: FormData) {
 
 function ensureDatabaseConfigured() {
   if (!isDatabaseConfigured()) {
-    throw new Error("Configure um PostgreSQL real para salvar configuracoes.");
+    throw new Error("Configure um PostgreSQL real para salvar configurações.");
   }
 }
 
@@ -74,7 +74,7 @@ export async function updateStoreSettingsAction(formData: FormData) {
   });
 
   if (existingSlug && existingSlug.id !== user.storeId) {
-    throw new Error("Esse link publico ja esta em uso.");
+    throw new Error("Esse link público já está em uso.");
   }
 
   await prisma.store.update({
