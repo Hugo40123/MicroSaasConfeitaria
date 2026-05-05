@@ -1,17 +1,24 @@
-import { orders } from "@/lib/sample-data";
 import {
   createCustomerPortalOrder,
+  listOrdersForCurrentStore
+} from "@/lib/order-persistence";
+import {
   OrderValidationError,
   parseCustomerOrderInput
 } from "@/lib/order-service";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
+  const ordersResult = await listOrdersForCurrentStore();
+
   return NextResponse.json({
-    data: orders,
+    data: ordersResult.data,
     meta: {
-      source: "mock",
-      message: "Substituir por Prisma quando DATABASE_URL estiver configurada."
+      source: ordersResult.source,
+      message:
+        ordersResult.source === "database"
+          ? "Pedidos carregados do PostgreSQL."
+          : "Usando dados mockados ate DATABASE_URL apontar para um banco real."
     }
   });
 }
@@ -20,15 +27,17 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const input = parseCustomerOrderInput(body);
-    const order = createCustomerPortalOrder(input);
+    const orderResult = await createCustomerPortalOrder(input);
 
     return NextResponse.json(
       {
-        data: order,
+        data: orderResult.data,
         meta: {
-          source: "mock",
+          source: orderResult.source,
           message:
-            "Pedido validado no servidor. Persistencia com Prisma entra na proxima etapa."
+            orderResult.source === "database"
+              ? "Pedido gravado no PostgreSQL."
+              : "Pedido validado no servidor. Persistencia sera usada quando DATABASE_URL apontar para um banco real."
         }
       },
       { status: 201 }

@@ -102,7 +102,7 @@ model Customer {
   store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@index([storeId])
-  @@index([storeId, phone])
+  @@unique([storeId, phone])
   @@index([storeId, name])
 }
 

@@ -21,7 +21,7 @@ MVP inicial de um sistema SaaS para pequenas confeitarias, com painel da loja e 
 - `/app/configuracoes`: dados da loja e venda online
 - `/loja/doce-maria`: portal publico do cliente
 - `/pedido/BM-1042`: acompanhamento do pedido
-- `/api/orders`: endpoint REST inicial com dados mockados
+- `/api/orders`: endpoint REST de pedidos com fallback mock/Prisma
 
 ## Como rodar
 
@@ -45,11 +45,12 @@ Quando houver um PostgreSQL configurado, copie `.env.example` para `.env`, ajust
 ```bash
 npm run prisma:generate
 npm run prisma:migrate
+npm run db:seed
 ```
 
 ## Proxima etapa
 
-Conectar autenticacao, persistencia real com Prisma e criacao de pedidos do portal gravando no banco da loja correta por `storeId`.
+Conectar autenticacao e trocar as telas internas para leitura do banco real usando Prisma.
 
 ## Versionamento
 
