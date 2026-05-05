@@ -65,6 +65,7 @@ button:disabled {
 .app-shell {
   display: grid;
   min-height: 100vh;
+  min-width: 0;
 }
 
 .auth-shell {
@@ -93,10 +94,11 @@ button:disabled {
   top: 0;
   z-index: 10;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
   width: 100%;
-  overflow-x: auto;
+  overflow: hidden;
   border-bottom: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.94);
   padding: 0.75rem 1rem;
@@ -105,7 +107,7 @@ button:disabled {
 
 .brand {
   display: flex;
-  min-width: max-content;
+  min-width: 0;
   align-items: center;
   gap: 0.65rem;
   padding-right: 0.75rem;
@@ -125,23 +127,35 @@ button:disabled {
 .brand-title {
   display: grid;
   gap: 0.05rem;
+  min-width: 0;
 }
 
 .brand-title strong {
+  overflow: hidden;
   font-size: 0.95rem;
   line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .brand-title span {
+  overflow: hidden;
   color: var(--muted);
   font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nav-list {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  min-width: max-content;
+  order: 3;
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+  scrollbar-width: thin;
 }
 
 .nav-item {
@@ -168,7 +182,7 @@ button:disabled {
 
 .sidebar-footer {
   display: flex;
-  min-width: max-content;
+  min-width: 0;
   align-items: center;
   gap: 0.55rem;
   margin-left: auto;
@@ -226,9 +240,10 @@ button:disabled {
 
 .main-area {
   width: 100%;
+  min-width: 0;
   max-width: 1180px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0.85rem;
 }
 
 .page-head {
@@ -256,8 +271,8 @@ p {
 h1 {
   max-width: 760px;
   margin-bottom: 0;
-  font-size: clamp(2rem, 5vw, 3.8rem);
-  line-height: 0.96;
+  font-size: clamp(1.8rem, 8vw, 3.8rem);
+  line-height: 1;
 }
 
 h2 {
@@ -282,6 +297,10 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 0.65rem;
+}
+
+.actions .btn {
+  flex: 1 1 12rem;
 }
 
 .btn {
@@ -341,7 +360,7 @@ h3 {
 .metrics-grid {
   display: grid;
   gap: 0.85rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .metric-card,
@@ -396,6 +415,7 @@ h3 {
 
 .section-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
@@ -490,11 +510,14 @@ h3 {
 
 .table-wrap {
   overflow-x: auto;
+  margin-inline: -0.25rem;
+  padding-inline: 0.25rem;
+  scrollbar-width: thin;
 }
 
 table {
   width: 100%;
-  min-width: 720px;
+  min-width: 660px;
   border-collapse: collapse;
 }
 
@@ -565,7 +588,7 @@ th {
   gap: 1.2rem;
   max-width: 1180px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0.85rem;
 }
 
 .store-banner {
@@ -590,6 +613,7 @@ th {
 .store-banner h1 {
   max-width: 680px;
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .store-banner p {
@@ -631,7 +655,7 @@ th {
   gap: 1rem;
   max-width: 1180px;
   margin: 0 auto;
-  padding: 0 1rem 1.25rem;
+  padding: 0 0.85rem 1.25rem;
 }
 
 .product-grid {
@@ -728,6 +752,7 @@ th {
 
 .product-title-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 0.8rem;
 }
@@ -738,10 +763,8 @@ th {
 }
 
 .cart-sticky {
-  position: sticky;
-  bottom: 0;
-  z-index: 9;
-  padding: 0 1rem 1rem;
+  position: static;
+  padding: 0;
 }
 
 .checkout-panel {
@@ -752,6 +775,7 @@ th {
 
 .cart-line {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
@@ -890,6 +914,7 @@ th {
 .split {
   display: grid;
   gap: 1rem;
+  min-width: 0;
 }
 
 .timeline {
@@ -962,6 +987,7 @@ th {
 
   .sidebar {
     display: grid;
+    flex-wrap: initial;
     align-content: start;
     align-items: start;
     width: 270px;
@@ -979,7 +1005,11 @@ th {
   .nav-list {
     display: grid;
     gap: 0.25rem;
+    order: initial;
+    width: auto;
     min-width: 0;
+    overflow: visible;
+    padding-bottom: 0;
   }
 
   .sidebar-footer {
