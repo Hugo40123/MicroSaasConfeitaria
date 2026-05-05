@@ -8,12 +8,14 @@ import {
   CheckCircle2,
   Clock3,
   MapPin,
+  MessageCircle,
   Minus,
   Plus,
   Search,
   Send,
   ShoppingCart,
-  Store
+  Store,
+  UserRound
 } from "lucide-react";
 import { type CSSProperties, type FormEvent, useMemo, useState } from "react";
 
@@ -200,11 +202,11 @@ export function PublicStorefront({
       className="storefront"
       style={
         {
-          "--store-primary": "#8f3f5f",
-          "--store-primary-strong": "#62273f",
-          "--store-accent": "#d9a441",
-          "--store-bg": "#fff8f2",
-          "--store-soft": "#f7e8dd"
+          "--store-primary": "#d79771",
+          "--store-primary-strong": "#734939",
+          "--store-accent": "#f7b239",
+          "--store-bg": "#fff6e8",
+          "--store-soft": "#fff0da"
         } as CSSProperties
       }
     >
@@ -507,6 +509,22 @@ export function PublicStorefront({
           </form>
         </aside>
       </section>
+
+      <footer className="store-footer">
+        <div className="store-socials" aria-label="Contatos">
+          <a href={makeStoreWhatsAppHref(store.phone, `Ola! Quero fazer um pedido na ${store.name}.`)}>
+            <MessageCircle aria-hidden="true" />
+            <span className="sr-only">WhatsApp</span>
+          </a>
+          <span>
+            <Store aria-hidden="true" />
+          </span>
+          <span>
+            <UserRound aria-hidden="true" />
+          </span>
+        </div>
+        <p>Copyright © {store.name}</p>
+      </footer>
     </main>
   );
 }
