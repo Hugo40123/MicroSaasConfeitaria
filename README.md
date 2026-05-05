@@ -61,7 +61,7 @@ Para detalhes de banco local, banco remoto e deploy de migrations, consulte `doc
 
 ## Proxima etapa
 
-Polir o MVP e revisar fluxo ponta a ponta.
+Proxima etapa: testar com PostgreSQL real e preparar deploy.
 
 ## Resumo leigo das funcoes atuais
 
@@ -85,6 +85,7 @@ Polir o MVP e revisar fluxo ponta a ponta.
 - Financeiro soma sinais de pedidos e lancamentos manuais de entrada/saida por loja.
 - Links de WhatsApp geram mensagens prontas com resumo, status, total e acompanhamento do pedido.
 - Administradores podem criar atendentes e usuarios podem trocar a propria senha com PostgreSQL real.
+- Relatorios agora usam dados reais de pedidos, produtos online, status e produtos vendidos.
 
 ## Acessos de desenvolvimento
 

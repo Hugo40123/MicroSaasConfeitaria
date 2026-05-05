@@ -1,25 +1,27 @@
 import { MetricCard } from "@/components/metric-card";
 import { requirePermission } from "@/lib/current-user";
-import { formatCurrency, orders, products } from "@/lib/sample-data";
+import { getReportsForCurrentStore } from "@/lib/report-repository";
+import { formatCurrency } from "@/lib/sample-data";
 import { BarChart3, CalendarDays, Package, PieChart } from "lucide-react";
 
 export default async function ReportsPage() {
-  await requirePermission("view_reports");
-
-  const revenue = orders.reduce((sum, order) => sum + order.total, 0);
-  const pending = orders.filter(
-    (order) => order.status === "aguardando_confirmacao"
-  ).length;
+  const user = await requirePermission("view_reports");
+  const reportsResult = await getReportsForCurrentStore(user.storeId);
+  const reports = reportsResult.data;
 
   return (
     <>
       <header className="page-head">
         <div>
-          <p className="eyebrow">Relatórios</p>
-          <h1>Vendas, produtos e status com leitura rápida.</h1>
+          <p className="eyebrow">Relatorios</p>
+          <h1>Vendas, produtos e status com leitura rapida.</h1>
           <p className="lead">
-            Indicadores simples para a dona da loja entender o mês sem precisar
+            Indicadores simples para a dona da loja entender o mes sem precisar
             exportar planilhas.
+          </p>
+          <p className="muted" style={{ marginTop: "0.75rem" }}>
+            Fonte dos relatorios:{" "}
+            {reportsResult.source === "database" ? "PostgreSQL" : "dados de exemplo"}
           </p>
         </div>
       </header>
@@ -29,25 +31,25 @@ export default async function ReportsPage() {
           detail="Pedidos cadastrados"
           icon={CalendarDays}
           label="Pedidos"
-          value={String(orders.length)}
+          value={String(reports.orderCount)}
         />
         <MetricCard
           detail="Valor total de pedidos"
           icon={BarChart3}
           label="Faturamento"
-          value={formatCurrency(revenue)}
+          value={formatCurrency(reports.revenue)}
         />
         <MetricCard
-          detail="Aguardando revisão"
+          detail="Aguardando revisao"
           icon={PieChart}
           label="Pendentes"
-          value={String(pending)}
+          value={String(reports.pendingCount)}
         />
         <MetricCard
-          detail="Disponíveis no portal"
+          detail="Disponiveis no portal"
           icon={Package}
           label="Produtos online"
-          value={String(products.filter((product) => product.online).length)}
+          value={String(reports.onlineProductCount)}
         />
       </section>
 
@@ -57,19 +59,20 @@ export default async function ReportsPage() {
             <h2>Produtos mais vendidos</h2>
           </div>
           <div className="list">
-            {["Bolo Ninho com Morango", "Fatia Chocolate Cremoso", "Brigadeiro Gourmet"].map(
-              (item, index) => (
-                <article className="item-card" key={item}>
-                  <div className="item-main">
-                    <div>
-                      <p className="item-title">{item}</p>
-                      <p className="item-subtitle">{12 - index * 3} vendas no período</p>
-                    </div>
-                    <span className="badge neutral">#{index + 1}</span>
+            {reports.topProducts.map((item, index) => (
+              <article className="item-card" key={item.name}>
+                <div className="item-main">
+                  <div>
+                    <p className="item-title">{item.name}</p>
+                    <p className="item-subtitle">{item.quantity} unidades no periodo</p>
                   </div>
-                </article>
-              )
-            )}
+                  <span className="badge neutral">#{index + 1}</span>
+                </div>
+              </article>
+            ))}
+            {reports.topProducts.length === 0 ? (
+              <p className="muted">Ainda nao ha itens vendidos.</p>
+            ) : null}
           </div>
         </div>
 
@@ -78,19 +81,17 @@ export default async function ReportsPage() {
             <h2>Pedidos por status</h2>
           </div>
           <div className="list">
-            {[
-              ["Aguardando confirmação", 1],
-              ["Em produção", 1],
-              ["Confirmado", 1],
-              ["Pronto", 1]
-            ].map(([label, value]) => (
-              <article className="item-card" key={label}>
+            {reports.statusCounts.map((item) => (
+              <article className="item-card" key={item.label}>
                 <div className="item-main">
-                  <p className="item-title">{label}</p>
-                  <span className="badge neutral">{value}</span>
+                  <p className="item-title">{item.label}</p>
+                  <span className="badge neutral">{item.value}</span>
                 </div>
               </article>
             ))}
+            {reports.statusCounts.length === 0 ? (
+              <p className="muted">Ainda nao ha pedidos cadastrados.</p>
+            ) : null}
           </div>
         </div>
       </section>

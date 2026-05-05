@@ -137,12 +137,16 @@ A autenticacao tambem usa fallback:
   - `src/lib/user-repository.ts` lista usuarios da loja;
   - `src/lib/user-actions.ts` cria atendentes e troca a propria senha;
   - recuperacao por e-mail e auditoria persistente ainda dependem de provedor externo.
+- Relatorios:
+  - `src/lib/report-repository.ts` calcula indicadores reais por loja;
+  - `/app/relatorios` mostra pedidos, faturamento, pendencias, produtos online, mais vendidos e status.
 
 ## Proximas etapas tecnicas
 
 1. Conectar o PostgreSQL local/remoto seguindo `docs/BANCO_DE_DADOS.md`.
 2. Rodar migrations e seed.
-3. Polir o MVP e revisar fluxo ponta a ponta.
+3. Testar fluxo ponta a ponta com PostgreSQL real.
+4. Preparar deploy conforme `docs/DEPLOY.md`.
 
 ## Backup remoto
 
