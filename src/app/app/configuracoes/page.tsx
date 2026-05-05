@@ -1,11 +1,14 @@
 import { requirePermission } from "@/lib/current-user";
 import { updateStoreSettingsAction } from "@/lib/store-actions";
 import { getStoreSettings } from "@/lib/store-settings";
-import { Save, Store, ToggleLeft } from "lucide-react";
+import { changeOwnPasswordAction, createAttendantAction } from "@/lib/user-actions";
+import { listTeamUsers } from "@/lib/user-repository";
+import { Save, ShieldCheck, Store, ToggleLeft, UserPlus } from "lucide-react";
 
 export default async function SettingsPage() {
   const user = await requirePermission("manage_settings");
   const settingsResult = await getStoreSettings(user.storeId);
+  const teamResult = await listTeamUsers(user.storeId);
   const settings = settingsResult.data;
   const isMock = settingsResult.source === "mock";
 
@@ -130,6 +133,75 @@ export default async function SettingsPage() {
           </div>
         </section>
       </form>
+
+      <section className="split" style={{ marginTop: "1rem" }}>
+        <div className="panel">
+          <div className="section-head">
+            <h2>Equipe</h2>
+            <UserPlus aria-hidden="true" />
+          </div>
+          <form action={createAttendantAction} className="product-form">
+            <div className="form-grid">
+              <label className="field">
+                <span>Nome</span>
+                <input className="input" disabled={isMock} name="name" required />
+              </label>
+              <label className="field">
+                <span>E-mail</span>
+                <input className="input" disabled={isMock} name="email" required type="email" />
+              </label>
+              <label className="field">
+                <span>Senha temporaria</span>
+                <input className="input" disabled={isMock} minLength={8} name="password" required type="password" />
+              </label>
+            </div>
+            <div className="actions">
+              <button className="btn btn-primary" disabled={isMock} type="submit">
+                <UserPlus aria-hidden="true" />
+                Criar atendente
+              </button>
+            </div>
+          </form>
+          <div className="list" style={{ marginTop: "1rem" }}>
+            {teamResult.data.map((teamUser) => (
+              <article className="item-card" key={teamUser.id}>
+                <div className="item-main">
+                  <div>
+                    <p className="item-title">{teamUser.name}</p>
+                    <p className="item-subtitle">{teamUser.email}</p>
+                  </div>
+                  <span className="badge neutral">
+                    {teamUser.role === "ADMIN" ? "Admin" : "Atendente"}
+                  </span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <div className="panel">
+          <div className="section-head">
+            <h2>Seguranca</h2>
+            <ShieldCheck aria-hidden="true" />
+          </div>
+          <form action={changeOwnPasswordAction} className="product-form">
+            <label className="field">
+              <span>Senha atual</span>
+              <input className="input" disabled={isMock} name="currentPassword" required type="password" />
+            </label>
+            <label className="field">
+              <span>Nova senha</span>
+              <input className="input" disabled={isMock} minLength={8} name="newPassword" required type="password" />
+            </label>
+            <div className="actions">
+              <button className="btn btn-primary" disabled={isMock} type="submit">
+                <ShieldCheck aria-hidden="true" />
+                Trocar senha
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
     </>
   );
 }

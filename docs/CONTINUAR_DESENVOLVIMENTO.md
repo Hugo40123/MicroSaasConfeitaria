@@ -133,12 +133,16 @@ A autenticacao tambem usa fallback:
   - `src/lib/whatsapp.ts` centraliza links `wa.me`;
   - pedidos geram mensagem pronta com itens, total, status e link de acompanhamento;
   - acompanhamento publico abre conversa com a loja mencionando o codigo.
+- Seguranca de conta:
+  - `src/lib/user-repository.ts` lista usuarios da loja;
+  - `src/lib/user-actions.ts` cria atendentes e troca a propria senha;
+  - recuperacao por e-mail e auditoria persistente ainda dependem de provedor externo.
 
 ## Proximas etapas tecnicas
 
 1. Conectar o PostgreSQL local/remoto seguindo `docs/BANCO_DE_DADOS.md`.
 2. Rodar migrations e seed.
-3. Preparar deploy com banco remoto e variaveis de ambiente.
+3. Polir o MVP e revisar fluxo ponta a ponta.
 
 ## Backup remoto
 

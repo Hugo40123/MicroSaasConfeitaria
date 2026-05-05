@@ -61,7 +61,7 @@ Para detalhes de banco local, banco remoto e deploy de migrations, consulte `doc
 
 ## Proxima etapa
 
-Adicionar recuperacao e troca de senha.
+Polir o MVP e revisar fluxo ponta a ponta.
 
 ## Resumo leigo das funcoes atuais
 
@@ -84,6 +84,7 @@ Adicionar recuperacao e troca de senha.
 - Agenda de producao usa pedidos reais pendentes por data e horario.
 - Financeiro soma sinais de pedidos e lancamentos manuais de entrada/saida por loja.
 - Links de WhatsApp geram mensagens prontas com resumo, status, total e acompanhamento do pedido.
+- Administradores podem criar atendentes e usuarios podem trocar a propria senha com PostgreSQL real.
 
 ## Acessos de desenvolvimento
 
