@@ -20,21 +20,27 @@ Este documento permite retomar o projeto em outra maquina, outra conta do Codex 
 npm install
 ```
 
-3. Copie `.env.example` para `.env` e ajuste `DATABASE_URL` quando houver banco real.
-4. Gere o Prisma Client:
+3. Suba um PostgreSQL local ou configure um PostgreSQL remoto. Para local:
+
+```bash
+docker compose up -d postgres
+```
+
+4. Copie `.env.example` para `.env` e ajuste `DATABASE_URL` se estiver usando banco remoto.
+5. Gere o Prisma Client:
 
 ```bash
 npm run prisma:generate
 ```
 
-5. Quando houver PostgreSQL real, rode as migrations e o seed:
+6. Rode as migrations e o seed:
 
 ```bash
 npm run prisma:migrate
 npm run db:seed
 ```
 
-6. Rode em desenvolvimento:
+7. Rode em desenvolvimento:
 
 ```bash
 npm run dev
@@ -54,7 +60,7 @@ npm run build
 - `/app`: painel da loja
 - `/app/pedidos`: pedidos
 - `/app/agenda`: agenda de producao
-- `/app/produtos`: produtos
+- `/app/produtos`: produtos, edicao, status e visibilidade online
 - `/app/clientes`: clientes
 - `/app/financeiro`: financeiro
 - `/app/relatorios`: relatorios
@@ -88,16 +94,17 @@ A autenticacao tambem usa fallback:
 - O painel `/app` exige cookie de sessao; sem sessao valida, redireciona para `/login`.
 - Produtos, pedidos, configuracoes basicas e link do portal usam `storeId`/`storeSlug` do usuario logado quando ha banco real.
 - A API `GET /api/orders` exige sessao para listar pedidos da loja logada.
+- O CRUD de produtos usa Server Actions, valida preco/categoria/prazos e grava sempre filtrando por `storeId`.
+- Sem PostgreSQL real, a tela de produtos continua mostrando dados de exemplo, mas desabilita gravacao para evitar falsa persistencia.
 
 ## Proximas etapas tecnicas
 
-1. Conectar um PostgreSQL real.
+1. Conectar o PostgreSQL local/remoto seguindo `docs/BANCO_DE_DADOS.md`.
 2. Rodar migrations e seed.
-3. Criar CRUD funcional de produtos.
-4. Criar gestao real de status de pedidos.
-5. Adicionar permissoes de Admin e Atendente.
-6. Configurar upload de imagens de produtos.
-7. Criar integracao com WhatsApp e geracao de recibo.
+3. Criar gestao real de status de pedidos.
+4. Adicionar permissoes de Admin e Atendente.
+5. Configurar upload de imagens de produtos.
+6. Criar integracao com WhatsApp e geracao de recibo.
 
 ## Backup remoto
 

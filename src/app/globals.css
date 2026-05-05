@@ -525,7 +525,8 @@ th {
   gap: 0.35rem;
 }
 
-.field label {
+.field label,
+.field > span {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 800;
@@ -734,6 +735,95 @@ th {
   line-height: 1.45;
 }
 
+.product-editor {
+  display: grid;
+  gap: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  padding: 0.85rem;
+}
+
+.product-editor + .search-row,
+.product-edit-list {
+  margin-top: 1rem;
+}
+
+.product-editor summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+  font-weight: 850;
+  list-style: none;
+}
+
+.product-editor summary::-webkit-details-marker {
+  display: none;
+}
+
+.product-editor summary span {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.product-editor summary small {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.product-editor summary svg {
+  flex: 0 0 auto;
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--muted);
+}
+
+.product-form {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.toggle-row,
+.row-actions,
+.check-field {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-row,
+.row-actions {
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.check-field {
+  gap: 0.45rem;
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+.check-field input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--rose);
+}
+
+.product-edit-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
 .split {
   display: grid;
   gap: 1rem;
@@ -787,6 +877,10 @@ th {
   .search-row {
     grid-template-columns: minmax(240px, 1fr) repeat(2, minmax(160px, 0.45fr));
     align-items: end;
+  }
+
+  .form-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .product-grid {

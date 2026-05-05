@@ -3,6 +3,32 @@ import { products as sampleProducts, store as sampleStore } from "@/lib/sample-d
 import { getPrismaClient, isDatabaseConfigured } from "@/lib/prisma";
 
 export type StoreProfile = typeof sampleStore;
+export type ProductCategoryValue =
+  | "WHOLE_CAKE"
+  | "CAKE_SLICE"
+  | "SWEET"
+  | "EXTRA"
+  | "CUSTOM";
+
+export type AdminProduct = Product & {
+  dbCategory: ProductCategoryValue;
+  basePrice: number;
+  cost: number | null;
+  preparationHours: number | null;
+  minOrderNoticeDays: number | null;
+  imageUrl: string;
+};
+
+export const productCategoryOptions = [
+  { value: "WHOLE_CAKE", label: "Bolos inteiros" },
+  { value: "CAKE_SLICE", label: "Fatias" },
+  { value: "SWEET", label: "Doces" },
+  { value: "EXTRA", label: "Extras" },
+  { value: "CUSTOM", label: "Personalizados" }
+] as const satisfies ReadonlyArray<{
+  value: ProductCategoryValue;
+  label: ProductCategory | "Personalizados";
+}>;
 
 const categoryMap = {
   WHOLE_CAKE: "Bolos inteiros",
@@ -63,6 +89,37 @@ function mapDbProductToUiProduct(product: DbProduct): Product {
   };
 }
 
+function mapDbProductToAdminProduct(product: DbProduct): AdminProduct {
+  return {
+    ...mapDbProductToUiProduct(product),
+    dbCategory: product.category,
+    basePrice: Number(product.basePrice),
+    cost: product.cost === null ? null : Number(product.cost),
+    preparationHours: product.preparationHours,
+    minOrderNoticeDays: product.minOrderNoticeDays,
+    imageUrl: product.imageUrl ?? ""
+  };
+}
+
+function mapSampleProductToAdminProduct(product: Product): AdminProduct {
+  const category = productCategoryOptions.find(
+    (option) => option.label === product.category
+  );
+
+  return {
+    ...product,
+    dbCategory: category?.value ?? "EXTRA",
+    basePrice: product.price,
+    cost: null,
+    preparationHours:
+      product.preparationTime === "Pronta entrega"
+        ? 0
+        : Number(product.preparationTime.replace(/\D/g, "")) * 24 || null,
+    minOrderNoticeDays: null,
+    imageUrl: ""
+  };
+}
+
 function mapDbStoreToStoreProfile(store: {
   name: string;
   publicSlug: string;
@@ -120,12 +177,12 @@ async function getOnlineProductsFromDatabase(storeSlug: string) {
 }
 
 export async function listProductsForCurrentStore(storeId: string): Promise<{
-  data: Product[];
+  data: AdminProduct[];
   source: "database" | "mock";
 }> {
   if (!isDatabaseConfigured()) {
     return {
-      data: sampleProducts,
+      data: sampleProducts.map(mapSampleProductToAdminProduct),
       source: "mock"
     };
   }
@@ -133,7 +190,7 @@ export async function listProductsForCurrentStore(storeId: string): Promise<{
   const dbProducts = await getProductsFromDatabase(storeId);
 
   return {
-    data: dbProducts.map(mapDbProductToUiProduct),
+    data: dbProducts.map(mapDbProductToAdminProduct),
     source: "database"
   };
 }

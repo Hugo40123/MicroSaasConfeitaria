@@ -14,7 +14,7 @@ MVP inicial de um sistema SaaS para pequenas confeitarias, com painel da loja e 
 - `/app`: painel da loja
 - `/app/pedidos`: gestao de pedidos
 - `/app/agenda`: agenda de producao
-- `/app/produtos`: cadastro de produtos
+- `/app/produtos`: cadastro, edicao, ativacao e visibilidade online de produtos
 - `/app/clientes`: cadastro de clientes
 - `/app/financeiro`: caixa simples
 - `/app/relatorios`: relatorios
@@ -42,7 +42,14 @@ http://localhost:3000
 
 O schema inicial esta em `prisma/schema.prisma`, e a conexao fica em `prisma.config.ts`, seguindo o padrao do Prisma 7.
 
-Quando houver um PostgreSQL configurado, copie `.env.example` para `.env`, ajuste `DATABASE_URL` e rode:
+Para desenvolvimento local, o projeto inclui um `docker-compose.yml` com PostgreSQL. Suba o banco e rode a preparacao:
+
+```bash
+docker compose up -d postgres
+cp .env.example .env
+```
+
+Depois rode:
 
 ```bash
 npm run prisma:generate
@@ -50,9 +57,11 @@ npm run prisma:migrate
 npm run db:seed
 ```
 
+Para detalhes de banco local, banco remoto e deploy de migrations, consulte `docs/BANCO_DE_DADOS.md`.
+
 ## Proxima etapa
 
-Criar CRUD funcional de produtos para a loja cadastrar, editar e desativar itens pelo painel.
+Criar gestao real de status dos pedidos pelo painel interno.
 
 ## Resumo leigo das funcoes atuais
 
@@ -63,6 +72,7 @@ Criar CRUD funcional de produtos para a loja cadastrar, editar e desativar itens
 - Agora tambem existe base de cadastro/login para a loja, com sessao segura quando houver banco real.
 - O painel interno ja exige login e permite sair da conta.
 - Produtos, pedidos e link do portal agora usam a loja do usuario logado quando ha banco real.
+- O painel de produtos ja permite criar, editar, ativar/desativar e controlar visibilidade no portal quando houver PostgreSQL real.
 
 ## Versionamento
 
