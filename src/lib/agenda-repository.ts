@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { getPrismaClient, isDatabaseConfigured } from "@/lib/prisma";
 import { orders, productionAgenda, type OrderStatus } from "@/lib/sample-data";
 
@@ -28,6 +29,12 @@ const fulfillmentMap = {
   PICKUP: "Retirada",
   DELIVERY: "Entrega"
 } as const;
+
+type DbAgendaOrder = Prisma.OrderGetPayload<{
+  include: {
+    items: true;
+  };
+}>;
 
 function formatDate(value: Date | null) {
   if (!value) return "Sem data";
@@ -71,7 +78,7 @@ export async function listAgendaForCurrentStore(storeId: string): Promise<{
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const dbOrders = await getPrismaClient().order.findMany({
+  const dbOrders: DbAgendaOrder[] = await getPrismaClient().order.findMany({
     where: {
       storeId,
       deliveryDate: {

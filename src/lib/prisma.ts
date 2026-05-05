@@ -24,7 +24,7 @@ export function getPgAdapterConnectionString(databaseUrl: string) {
   return url.toString();
 }
 
-export function getPrismaClient() {
+export function getPrismaClient(): PrismaClient {
   const databaseUrl = getDatabaseUrl();
 
   if (!databaseUrl || !isDatabaseConfigured()) {

@@ -11,6 +11,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
+    "postinstall": "prisma generate",
     "db:seed": "node prisma/seed.mjs",
     "db:verify": "node scripts/verify-db.mjs",
     "homologation:check": "node scripts/homologation-check.mjs",
