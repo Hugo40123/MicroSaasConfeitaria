@@ -78,6 +78,7 @@ Proxima etapa: testar com PostgreSQL real e preparar deploy.
 - Usuarios `ADMIN` acessam produtos, financeiro, relatorios e configuracoes.
 - Usuarios `ATTENDANT` acessam operacao diaria: resumo, pedidos, agenda, clientes e portal.
 - Produtos aceitam upload local de imagem JPG, PNG ou WebP ate 2 MB, salva em `public/uploads/products`.
+- Upload de produtos suporta driver local e Supabase Storage para deploy com disco nao persistente.
 - Configuracoes da loja salvam nome, slug publico, telefone, WhatsApp, endereco e regras de venda online no banco.
 - Pedidos internos podem ser criados pelo painel usando produtos ativos da loja.
 - Clientes agora sao listados do banco, com contagem de pedidos e edicao basica por loja.

@@ -38,6 +38,7 @@ npm run prisma:generate
 ```bash
 npm run prisma:migrate
 npm run db:seed
+npm run db:verify
 ```
 
 7. Rode em desenvolvimento:
@@ -118,7 +119,8 @@ A autenticacao tambem usa fallback:
 - Com seed em PostgreSQL real, use `admin@docemaria.local` / `admin123` e `atendente@docemaria.local` / `atendente123`.
 - Upload de produtos:
   - imagens JPG, PNG e WebP ate 2 MB;
-  - arquivos locais em `public/uploads/products`;
+  - storage local em desenvolvimento ou Supabase Storage em producao;
+  - `src/lib/upload-storage.ts` centraliza o driver de upload;
   - URL salva em `Product.imageUrl` e exibida no painel e no portal.
 - Configuracoes reais:
   - `src/lib/store-settings.ts` centraliza leitura de configuracoes da loja;
@@ -173,4 +175,4 @@ git push
 
 Use `docs/DEPLOY.md` para publicar com PostgreSQL remoto. Antes de deploy, rode
 `npm run typecheck`, `npm run build` e `npm run prisma:deploy` no ambiente com
-`DATABASE_URL` real.
+`DATABASE_URL` real. Depois rode `npm run db:verify`.

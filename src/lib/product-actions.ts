@@ -3,10 +3,8 @@
 import { requirePermission } from "@/lib/current-user";
 import { getPrismaClient, isDatabaseConfigured } from "@/lib/prisma";
 import type { ProductCategoryValue } from "@/lib/product-repository";
-import { randomUUID } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
+import { saveProductImage } from "@/lib/upload-storage";
 import { revalidatePath } from "next/cache";
-import path from "path";
 
 const productCategories = new Set<ProductCategoryValue>([
   "WHOLE_CAKE",
@@ -15,13 +13,6 @@ const productCategories = new Set<ProductCategoryValue>([
   "EXTRA",
   "CUSTOM"
 ]);
-const imageMaxSizeBytes = 2 * 1024 * 1024;
-const allowedImageTypes = new Map([
-  ["image/jpeg", "jpg"],
-  ["image/png", "png"],
-  ["image/webp", "webp"]
-]);
-
 function getString(formData: FormData, field: string) {
   return String(formData.get(field) ?? "").trim();
 }
@@ -88,25 +79,7 @@ async function saveUploadedImage(formData: FormData) {
     return getString(formData, "imageUrl") || null;
   }
 
-  const extension = allowedImageTypes.get(file.type);
-
-  if (!extension) {
-    throw new Error("Envie uma imagem JPG, PNG ou WebP.");
-  }
-
-  if (file.size > imageMaxSizeBytes) {
-    throw new Error("A imagem deve ter no maximo 2 MB.");
-  }
-
-  const uploadsDir = path.join(process.cwd(), "public", "uploads", "products");
-  const fileName = `${randomUUID()}.${extension}`;
-  const filePath = path.join(uploadsDir, fileName);
-  const buffer = Buffer.from(await file.arrayBuffer());
-
-  await mkdir(uploadsDir, { recursive: true });
-  await writeFile(filePath, buffer);
-
-  return `/uploads/products/${fileName}`;
+  return saveProductImage(file);
 }
 
 async function parseProductForm(formData: FormData) {

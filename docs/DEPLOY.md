@@ -9,6 +9,10 @@ Configure no provedor de deploy:
 ```env
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
 NEXT_PUBLIC_APP_URL="https://seu-dominio.com"
+UPLOAD_STORAGE_DRIVER="supabase"
+SUPABASE_URL="https://seu-projeto.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="sua-service-role-key"
+SUPABASE_STORAGE_BUCKET="product-images"
 ```
 
 Use uma `DATABASE_URL` real. O placeholder `postgresql://user:password@localhost:5432`
@@ -32,6 +36,12 @@ npm run db:seed
 
 Em producao real, prefira criar a primeira loja pela tela `/cadastro`.
 
+5. Verifique a conexao e as tabelas principais:
+
+```bash
+npm run db:verify
+```
+
 ## Build
 
 Antes de publicar:
@@ -49,15 +59,24 @@ SMOKE_BASE_URL=https://seu-dominio.com npm run smoke
 
 ## Uploads
 
-O upload atual salva arquivos em `public/uploads/products`. Isso funciona para
-desenvolvimento e servidores com disco persistente. Em plataformas serverless,
-migre esse ponto para Supabase Storage, S3 ou outro storage persistente antes de
-usar em producao.
+O upload usa `UPLOAD_STORAGE_DRIVER`.
+
+- `local`: salva em `public/uploads/products`; bom para desenvolvimento.
+- `supabase`: envia para Supabase Storage; recomendado para deploy serverless.
+
+Para Supabase Storage:
+
+1. Crie um bucket publico, por exemplo `product-images`.
+2. Configure `SUPABASE_URL`.
+3. Configure `SUPABASE_SERVICE_ROLE_KEY` apenas no servidor/provedor de deploy.
+4. Configure `SUPABASE_STORAGE_BUCKET`.
 
 ## Checklist
 
 - `DATABASE_URL` aponta para PostgreSQL remoto.
 - `NEXT_PUBLIC_APP_URL` aponta para o dominio final.
+- `UPLOAD_STORAGE_DRIVER` aponta para `supabase` em deploy serverless.
 - Migrations foram aplicadas com `npm run prisma:deploy`.
+- Banco foi verificado com `npm run db:verify`.
 - A primeira loja admin foi criada em `/cadastro`.
 - Testar login, produtos, pedido no portal, status, clientes, agenda e financeiro.

@@ -12,6 +12,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "db:seed": "node prisma/seed.mjs",
+    "db:verify": "node scripts/verify-db.mjs",
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
