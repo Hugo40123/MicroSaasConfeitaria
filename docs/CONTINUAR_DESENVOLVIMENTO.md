@@ -117,15 +117,18 @@ A autenticacao tambem usa fallback:
   - usa produtos ativos da loja logada;
   - cria/atualiza cliente por telefone;
   - nasce com `source=INTERNAL` e `status=CONFIRMED`.
+- Clientes reais:
+  - `src/lib/customer-repository.ts` lista clientes da loja com contagem de pedidos;
+  - `src/lib/customer-actions.ts` edita nome, WhatsApp, endereco e notas por `storeId`;
+  - sem PostgreSQL real, a tela usa dados mockados e bloqueia edicao.
 
 ## Proximas etapas tecnicas
 
 1. Conectar o PostgreSQL local/remoto seguindo `docs/BANCO_DE_DADOS.md`.
 2. Rodar migrations e seed.
-3. Listar clientes reais do banco.
-4. Criar agenda real de producao.
-5. Criar financeiro real.
-6. Criar integracao com WhatsApp e geracao de recibo.
+3. Criar agenda real de producao.
+4. Criar financeiro real.
+5. Criar integracao com WhatsApp e geracao de recibo.
 
 ## Backup remoto
 

@@ -61,7 +61,7 @@ Para detalhes de banco local, banco remoto e deploy de migrations, consulte `doc
 
 ## Proxima etapa
 
-Listar clientes reais do banco.
+Criar agenda real de producao.
 
 ## Resumo leigo das funcoes atuais
 
@@ -80,6 +80,7 @@ Listar clientes reais do banco.
 - Produtos aceitam upload local de imagem JPG, PNG ou WebP ate 2 MB, salva em `public/uploads/products`.
 - Configuracoes da loja salvam nome, slug publico, telefone, WhatsApp, endereco e regras de venda online no banco.
 - Pedidos internos podem ser criados pelo painel usando produtos ativos da loja.
+- Clientes agora sao listados do banco, com contagem de pedidos e edicao basica por loja.
 
 ## Acessos de desenvolvimento
 
