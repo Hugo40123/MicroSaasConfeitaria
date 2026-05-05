@@ -61,7 +61,7 @@ Para detalhes de banco local, banco remoto e deploy de migrations, consulte `doc
 
 ## Proxima etapa
 
-Criar integracao com WhatsApp e geracao de recibo.
+Preparar deploy com banco remoto e variaveis de ambiente.
 
 ## Resumo leigo das funcoes atuais
 
@@ -83,6 +83,7 @@ Criar integracao com WhatsApp e geracao de recibo.
 - Clientes agora sao listados do banco, com contagem de pedidos e edicao basica por loja.
 - Agenda de producao usa pedidos reais pendentes por data e horario.
 - Financeiro soma sinais de pedidos e lancamentos manuais de entrada/saida por loja.
+- Links de WhatsApp geram mensagens prontas com resumo, status, total e acompanhamento do pedido.
 
 ## Acessos de desenvolvimento
 

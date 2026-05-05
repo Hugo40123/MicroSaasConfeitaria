@@ -2,6 +2,7 @@
 
 import type { StoreProfile } from "@/lib/product-repository";
 import { formatCurrency, type Product } from "@/lib/sample-data";
+import { makeStoreWhatsAppHref } from "@/lib/whatsapp";
 import {
   CalendarDays,
   CheckCircle2,
@@ -146,10 +147,10 @@ export function PublicStorefront({
   }
 
   if (createdOrder) {
-    const whatsappDigits = store.phone.replace(/\D/g, "");
-    const whatsappHref = whatsappDigits
-      ? `https://wa.me/${whatsappDigits.startsWith("55") ? whatsappDigits : `55${whatsappDigits}`}`
-      : "#";
+    const whatsappHref = makeStoreWhatsAppHref(
+      store.phone,
+      `Ola! Acabei de enviar o pedido ${createdOrder.code} pelo cardapio online.`
+    );
 
     return (
       <main className="storefront">

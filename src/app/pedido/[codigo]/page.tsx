@@ -1,6 +1,7 @@
 import { StatusBadge } from "@/components/status-badge";
 import { getOrderByCodeForCurrentStore } from "@/lib/order-persistence";
 import { store } from "@/lib/sample-data";
+import { makeStoreWhatsAppHref } from "@/lib/whatsapp";
 import { PackageCheck, Send, Store } from "lucide-react";
 import Link from "next/link";
 
@@ -55,10 +56,10 @@ export default async function TrackingPage({
   const storeSlug = order.storeSlug ?? store.slug;
   const storePhone = order.storePhone ?? store.phone;
   const storeAddress = order.storeAddress ?? store.address;
-  const whatsappDigits = storePhone.replace(/\D/g, "");
-  const whatsappHref = whatsappDigits
-    ? `https://wa.me/${whatsappDigits.startsWith("55") ? whatsappDigits : `55${whatsappDigits}`}`
-    : "#";
+  const whatsappHref = makeStoreWhatsAppHref(
+    storePhone,
+    `Ola! Quero falar sobre o pedido ${order.code}.`
+  );
   const currentStep = statusStepIndex[order.status];
 
   return (

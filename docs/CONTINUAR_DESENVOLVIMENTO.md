@@ -129,12 +129,16 @@ A autenticacao tambem usa fallback:
   - `src/lib/financial-repository.ts` soma sinais de pedidos e transacoes manuais;
   - `src/lib/financial-actions.ts` cria receitas/despesas por `storeId`;
   - sem PostgreSQL real, a tela mostra mock e bloqueia lancamentos.
+- WhatsApp:
+  - `src/lib/whatsapp.ts` centraliza links `wa.me`;
+  - pedidos geram mensagem pronta com itens, total, status e link de acompanhamento;
+  - acompanhamento publico abre conversa com a loja mencionando o codigo.
 
 ## Proximas etapas tecnicas
 
 1. Conectar o PostgreSQL local/remoto seguindo `docs/BANCO_DE_DADOS.md`.
 2. Rodar migrations e seed.
-3. Criar integracao com WhatsApp e geracao de recibo.
+3. Preparar deploy com banco remoto e variaveis de ambiente.
 
 ## Backup remoto
 

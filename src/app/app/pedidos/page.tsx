@@ -9,6 +9,7 @@ import {
 } from "@/lib/order-persistence";
 import { listProductsForCurrentStore } from "@/lib/product-repository";
 import { formatCurrency, type OrderStatus } from "@/lib/sample-data";
+import { makeOrderWhatsAppHref } from "@/lib/whatsapp";
 import { CheckCircle2, Filter, Plus, Save, Search, Send, XCircle } from "lucide-react";
 
 const nextStatusByCurrentStatus: Partial<Record<OrderStatus, DatabaseOrderStatus>> = {
@@ -252,7 +253,7 @@ export default async function OrdersPage() {
 
                       <a
                         className="icon-btn"
-                        href={`https://wa.me/55${order.whatsapp.replace(/\D/g, "")}`}
+                        href={makeOrderWhatsAppHref(order)}
                         title="Enviar pelo WhatsApp"
                       >
                         <Send aria-hidden="true" />
