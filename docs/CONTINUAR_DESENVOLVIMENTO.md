@@ -86,17 +86,18 @@ A autenticacao tambem usa fallback:
 - Sem PostgreSQL real, login/cadastro simulam a entrada para manter a interface testavel.
 - Com PostgreSQL real, cadastro cria loja, usuario admin e sessao no banco.
 - O painel `/app` exige cookie de sessao; sem sessao valida, redireciona para `/login`.
+- Produtos, pedidos, configuracoes basicas e link do portal usam `storeId`/`storeSlug` do usuario logado quando ha banco real.
+- A API `GET /api/orders` exige sessao para listar pedidos da loja logada.
 
 ## Proximas etapas tecnicas
 
 1. Conectar um PostgreSQL real.
 2. Rodar migrations e seed.
-3. Fazer repositorios usarem a loja da sessao, e nao a loja demo.
-4. Criar CRUD funcional de produtos.
-5. Criar gestao real de status de pedidos.
-6. Adicionar permissoes de Admin e Atendente.
-7. Configurar upload de imagens de produtos.
-8. Criar integracao com WhatsApp e geracao de recibo.
+3. Criar CRUD funcional de produtos.
+4. Criar gestao real de status de pedidos.
+5. Adicionar permissoes de Admin e Atendente.
+6. Configurar upload de imagens de produtos.
+7. Criar integracao com WhatsApp e geracao de recibo.
 
 ## Backup remoto
 

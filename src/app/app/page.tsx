@@ -1,5 +1,6 @@
 import { MetricCard } from "@/components/metric-card";
 import { StatusBadge } from "@/components/status-badge";
+import { requireAuthUser } from "@/lib/current-user";
 import { listOrdersForCurrentStore } from "@/lib/order-persistence";
 import { formatCurrency, productionAgenda } from "@/lib/sample-data";
 import {
@@ -14,7 +15,8 @@ import {
 import Link from "next/link";
 
 export default async function DashboardPage() {
-  const ordersResult = await listOrdersForCurrentStore();
+  const user = await requireAuthUser();
+  const ordersResult = await listOrdersForCurrentStore(user.storeId);
   const orders = ordersResult.data;
   const todayOrders = orders.filter((order) => order.deliveryDate === "Hoje");
   const pendingConfirmation = orders.filter(
@@ -43,7 +45,7 @@ export default async function DashboardPage() {
             <ClipboardPlus aria-hidden="true" />
             Novo pedido
           </Link>
-          <Link href="/loja/doce-maria" className="btn btn-secondary">
+          <Link href={`/loja/${user.storeSlug}`} className="btn btn-secondary">
             <Store aria-hidden="true" />
             Ver portal
           </Link>

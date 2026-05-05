@@ -27,6 +27,10 @@ No runtime, o Prisma Client usa `@prisma/adapter-pg`. Enquanto `DATABASE_URL` es
 
 A base de autenticacao usa senha com hash via `crypto.scrypt`, cookie HTTP-only e tabela `Session`. Sem banco real, as rotas de login/cadastro usam modo mock para manter o fluxo testavel. O layout de `/app` consulta a sessao atual antes de renderizar o painel e redireciona para `/login` quando a sessao nao existe ou expirou.
 
+## Isolamento por loja
+
+As telas internas de resumo, pedidos, produtos e configuracoes consultam o usuario logado e usam `storeId`/`storeSlug` da sessao. O portal publico recebe o slug pela URL `/loja/[slug]`, e a API interna de listagem de pedidos exige sessao antes de retornar dados.
+
 ## Estado atual
 
-A interface esta funcional com fallback mock/Prisma para pedidos e produtos. Tambem existe base de cadastro/login e o painel interno ja exige sessao. O proximo passo e fazer os dados internos dependerem da loja logada.
+A interface esta funcional com fallback mock/Prisma para pedidos e produtos. Tambem existe base de cadastro/login, o painel interno exige sessao e os dados internos ja usam a loja logada quando ha banco real. O proximo passo e criar CRUD funcional de produtos.

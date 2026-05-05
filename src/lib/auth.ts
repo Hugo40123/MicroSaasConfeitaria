@@ -12,6 +12,7 @@ export type AuthUser = {
   email: string;
   role: "ADMIN" | "ATTENDANT";
   storeId: string;
+  storeSlug: string;
   storeName: string;
 };
 

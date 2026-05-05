@@ -1,9 +1,11 @@
+import { requireAuthUser } from "@/lib/current-user";
 import { listProductsForCurrentStore } from "@/lib/product-repository";
 import { formatCurrency } from "@/lib/sample-data";
 import { Eye, EyeOff, Plus, Search } from "lucide-react";
 
 export default async function ProductsPage() {
-  const productsResult = await listProductsForCurrentStore();
+  const user = await requireAuthUser();
+  const productsResult = await listProductsForCurrentStore(user.storeId);
   const products = productsResult.data;
 
   return (

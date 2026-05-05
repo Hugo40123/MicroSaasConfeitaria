@@ -1,4 +1,4 @@
-import { products, store } from "@/lib/sample-data";
+import { products } from "@/lib/sample-data";
 
 export type CustomerOrderItemInput = {
   productId: string;
@@ -91,7 +91,7 @@ export function parseCustomerOrderInput(payload: unknown): CustomerOrderInput {
   const rawItems = Array.isArray(payload.items) ? payload.items : [];
   const issues: string[] = [];
 
-  if (storeSlug !== store.slug) issues.push("Loja invalida.");
+  if (storeSlug.length < 2) issues.push("Loja invalida.");
   if (customerName.length < 3) issues.push("Informe o nome do cliente.");
   if (customerWhatsapp.replace(/\D/g, "").length < 10) {
     issues.push("Informe um WhatsApp valido.");
@@ -121,15 +121,6 @@ export function parseCustomerOrderInput(payload: unknown): CustomerOrderInput {
   }
 
   for (const item of items) {
-    const product = products.find(
-      (current) =>
-        current.id === item.productId && current.active && current.online
-    );
-
-    if (!product) {
-      issues.push("Um produto do carrinho nao esta disponivel.");
-    }
-
     if (item.quantity < 1 || item.quantity > 99) {
       issues.push("A quantidade de cada produto deve ficar entre 1 e 99.");
     }

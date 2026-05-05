@@ -21,6 +21,7 @@ function makeMockUser(email: string, name = "Admin Demo", storeName = "Doce Mari
     email,
     role: "ADMIN",
     storeId: "mock-store",
+    storeSlug: "doce-maria",
     storeName
   };
 }
@@ -33,6 +34,7 @@ function mapUserToAuthUser(user: {
   storeId: string;
   store: {
     name: string;
+    publicSlug: string;
   };
 }): AuthUser {
   return {
@@ -41,6 +43,7 @@ function mapUserToAuthUser(user: {
     email: user.email,
     role: user.role,
     storeId: user.storeId,
+    storeSlug: user.store.publicSlug,
     storeName: user.store.name
   };
 }

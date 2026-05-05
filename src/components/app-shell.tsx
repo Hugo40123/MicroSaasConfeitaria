@@ -1,5 +1,6 @@
 "use client";
 
+import type { AuthUser } from "@/lib/auth";
 import clsx from "clsx";
 import {
   BarChart3,
@@ -16,17 +17,15 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import type { AuthUser } from "@/lib/auth";
 
-const navItems = [
+const baseNavItems = [
   { href: "/app", label: "Resumo", icon: Home },
   { href: "/app/pedidos", label: "Pedidos", icon: ClipboardList },
   { href: "/app/agenda", label: "Agenda", icon: CalendarDays },
   { href: "/app/produtos", label: "Produtos", icon: Package },
-  { href: "/loja/doce-maria", label: "Portal", icon: Store },
   { href: "/app/clientes", label: "Clientes", icon: Users },
   { href: "/app/financeiro", label: "Financeiro", icon: WalletCards },
-  { href: "/app/relatorios", label: "Relatórios", icon: BarChart3 },
+  { href: "/app/relatorios", label: "Relatorios", icon: BarChart3 },
   { href: "/app/configuracoes", label: "Ajustes", icon: Settings }
 ];
 
@@ -40,6 +39,18 @@ export function AppShell({
   const pathname = usePathname();
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
+  const portalHref = `/loja/${user.storeSlug}`;
+  const storeInitials = user.storeName
+    .split(/\s+/)
+    .map((part) => part.slice(0, 1))
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  const navItems = [
+    ...baseNavItems.slice(0, 4),
+    { href: portalHref, label: "Portal", icon: Store },
+    ...baseNavItems.slice(4)
+  ];
 
   async function logout() {
     setLoggingOut(true);
@@ -58,9 +69,9 @@ export function AppShell({
     <div className="app-shell">
       <aside className="sidebar" aria-label="Navegacao principal">
         <Link className="brand" href="/app">
-          <span className="brand-mark">DM</span>
+          <span className="brand-mark">{storeInitials || "LC"}</span>
           <span className="brand-title">
-            <strong>Doce Maria</strong>
+            <strong>{user.storeName}</strong>
             <span>Painel da loja</span>
           </span>
         </Link>

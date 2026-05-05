@@ -1,15 +1,18 @@
+import { requireAuthUser } from "@/lib/current-user";
 import { store } from "@/lib/sample-data";
 import { Save, Store, ToggleLeft } from "lucide-react";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const user = await requireAuthUser();
+
   return (
     <>
       <header className="page-head">
         <div>
-          <p className="eyebrow">Configurações</p>
+          <p className="eyebrow">Configuracoes</p>
           <h1>Dados da loja, venda online e formas de pagamento.</h1>
           <p className="lead">
-            Aqui ficam as regras que controlam o portal público e a operação interna.
+            Aqui ficam as regras que controlam o portal publico e a operacao interna.
           </p>
         </div>
         <div className="actions">
@@ -29,18 +32,18 @@ export default function SettingsPage() {
           <div className="grid">
             <label className="field">
               <span>Nome</span>
-              <input className="input" defaultValue={store.name} />
+              <input className="input" defaultValue={user.storeName} />
             </label>
             <label className="field">
-              <span>Link público</span>
-              <input className="input" defaultValue={store.slug} />
+              <span>Link publico</span>
+              <input className="input" defaultValue={user.storeSlug} />
             </label>
             <label className="field">
               <span>Telefone</span>
               <input className="input" defaultValue={store.phone} />
             </label>
             <label className="field">
-              <span>Endereço</span>
+              <span>Endereco</span>
               <input className="input" defaultValue={store.address} />
             </label>
           </div>
@@ -56,7 +59,7 @@ export default function SettingsPage() {
               "Aceitar pedidos pelo portal",
               "Permitir retirada",
               "Permitir entrega",
-              "Solicitar sinal antes da produção"
+              "Solicitar sinal antes da producao"
             ].map((item) => (
               <label className="cart-line" key={item}>
                 <span className="item-title">{item}</span>

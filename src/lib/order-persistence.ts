@@ -1,5 +1,5 @@
 import type { Order } from "@/lib/sample-data";
-import { orders, store as sampleStore } from "@/lib/sample-data";
+import { orders } from "@/lib/sample-data";
 import {
   createCustomerPortalOrder as createMockCustomerPortalOrder,
   type CustomerOrderInput,
@@ -9,6 +9,15 @@ import {
 import { getPrismaClient, isDatabaseConfigured } from "@/lib/prisma";
 
 type DbOrder = Awaited<ReturnType<typeof getOrdersFromDatabase>>[number];
+type DbOrderForUi = DbOrder & {
+  store?: {
+    name: string;
+    publicSlug: string;
+    phone: string | null;
+    whatsapp: string | null;
+    address: string | null;
+  };
+};
 
 const statusMap = {
   AWAITING_CONFIRMATION: "aguardando_confirmacao",
@@ -56,7 +65,7 @@ const makeOrderCode = () => {
   return `BM-${suffix}`;
 };
 
-function mapDbOrderToUiOrder(order: DbOrder): Order {
+function mapDbOrderToUiOrder(order: DbOrderForUi): Order {
   return {
     id: order.id,
     code: order.code,
@@ -70,7 +79,11 @@ function mapDbOrderToUiOrder(order: DbOrder): Order {
     status: statusMap[order.status],
     total: toMoney(order.totalAmount),
     paidSignal: toMoney(order.signalAmount),
-    urgent: order.urgent
+    urgent: order.urgent,
+    storeName: order.store?.name,
+    storeSlug: order.store?.publicSlug,
+    storePhone: order.store?.phone ?? order.store?.whatsapp ?? undefined,
+    storeAddress: order.store?.address ?? undefined
   };
 }
 
@@ -87,22 +100,12 @@ function makePendingTrackingOrder(code: string): Order {
   };
 }
 
-async function getOrdersFromDatabase() {
+async function getOrdersFromDatabase(storeId: string) {
   const prisma = getPrismaClient();
-  const store = await prisma.store.findUnique({
-    where: {
-      publicSlug: sampleStore.slug
-    },
-    select: {
-      id: true
-    }
-  });
-
-  if (!store) return [];
 
   return prisma.order.findMany({
     where: {
-      storeId: store.id
+      storeId
     },
     include: {
       items: true
@@ -114,7 +117,7 @@ async function getOrdersFromDatabase() {
   });
 }
 
-export async function listOrdersForCurrentStore(): Promise<{
+export async function listOrdersForCurrentStore(storeId: string): Promise<{
   data: Order[];
   source: "database" | "mock";
 }> {
@@ -125,7 +128,7 @@ export async function listOrdersForCurrentStore(): Promise<{
     };
   }
 
-  const dbOrders = await getOrdersFromDatabase();
+  const dbOrders = await getOrdersFromDatabase(storeId);
 
   return {
     data: dbOrders.map(mapDbOrderToUiOrder),
@@ -150,7 +153,8 @@ export async function getOrderByCodeForCurrentStore(code: string): Promise<{
       publicTrackingCode: code
     },
     include: {
-      items: true
+      items: true,
+      store: true
     }
   });
 

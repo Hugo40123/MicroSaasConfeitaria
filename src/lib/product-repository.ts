@@ -2,6 +2,8 @@ import type { Product, ProductCategory } from "@/lib/sample-data";
 import { products as sampleProducts, store as sampleStore } from "@/lib/sample-data";
 import { getPrismaClient, isDatabaseConfigured } from "@/lib/prisma";
 
+export type StoreProfile = typeof sampleStore;
+
 const categoryMap = {
   WHOLE_CAKE: "Bolos inteiros",
   CAKE_SLICE: "Fatias",
@@ -61,22 +63,28 @@ function mapDbProductToUiProduct(product: DbProduct): Product {
   };
 }
 
-async function getProductsFromDatabase() {
-  const prisma = getPrismaClient();
-  const store = await prisma.store.findUnique({
-    where: {
-      publicSlug: sampleStore.slug
-    },
-    select: {
-      id: true
-    }
-  });
+function mapDbStoreToStoreProfile(store: {
+  name: string;
+  publicSlug: string;
+  phone: string | null;
+  whatsapp: string | null;
+  address: string | null;
+}): StoreProfile {
+  return {
+    name: store.name,
+    slug: store.publicSlug,
+    phone: store.phone ?? store.whatsapp ?? "",
+    address: store.address ?? "",
+    description: sampleStore.description
+  };
+}
 
-  if (!store) return [];
+async function getProductsFromDatabase(storeId: string) {
+  const prisma = getPrismaClient();
 
   return prisma.product.findMany({
     where: {
-      storeId: store.id
+      storeId
     },
     orderBy: {
       name: "asc"
@@ -84,7 +92,34 @@ async function getProductsFromDatabase() {
   });
 }
 
-export async function listProductsForCurrentStore(): Promise<{
+async function getOnlineProductsFromDatabase(storeSlug: string) {
+  const prisma = getPrismaClient();
+  const store = await prisma.store.findUnique({
+    where: {
+      publicSlug: storeSlug
+    },
+    include: {
+      products: {
+        where: {
+          active: true,
+          availableOnline: true
+        },
+        orderBy: {
+          name: "asc"
+        }
+      }
+    }
+  });
+
+  if (!store) return null;
+
+  return {
+    store: mapDbStoreToStoreProfile(store),
+    products: store.products
+  };
+}
+
+export async function listProductsForCurrentStore(storeId: string): Promise<{
   data: Product[];
   source: "database" | "mock";
 }> {
@@ -95,7 +130,7 @@ export async function listProductsForCurrentStore(): Promise<{
     };
   }
 
-  const dbProducts = await getProductsFromDatabase();
+  const dbProducts = await getProductsFromDatabase(storeId);
 
   return {
     data: dbProducts.map(mapDbProductToUiProduct),
@@ -103,14 +138,43 @@ export async function listProductsForCurrentStore(): Promise<{
   };
 }
 
-export async function listOnlineProductsForStore(): Promise<{
+export async function listOnlineProductsForStore(storeSlug: string): Promise<{
   data: Product[];
+  store: StoreProfile;
   source: "database" | "mock";
+  found: boolean;
 }> {
-  const products = await listProductsForCurrentStore();
+  if (!isDatabaseConfigured()) {
+    return {
+      data: sampleProducts.filter((product) => product.active && product.online),
+      store: {
+        ...sampleStore,
+        slug: storeSlug || sampleStore.slug
+      },
+      source: "mock",
+      found: true
+    };
+  }
+
+  const result = await getOnlineProductsFromDatabase(storeSlug);
+
+  if (!result) {
+    return {
+      data: [],
+      store: {
+        ...sampleStore,
+        name: "Loja nao encontrada",
+        slug: storeSlug
+      },
+      source: "database",
+      found: false
+    };
+  }
 
   return {
-    data: products.data.filter((product) => product.active && product.online),
-    source: products.source
+    data: result.products.map(mapDbProductToUiProduct),
+    store: result.store,
+    source: "database",
+    found: true
   };
 }

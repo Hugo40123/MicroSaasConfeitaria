@@ -52,7 +52,7 @@ npm run db:seed
 
 ## Proxima etapa
 
-Fazer produtos e pedidos usarem a loja do usuario logado, em vez da loja demo.
+Criar CRUD funcional de produtos para a loja cadastrar, editar e desativar itens pelo painel.
 
 ## Resumo leigo das funcoes atuais
 
@@ -62,6 +62,7 @@ Fazer produtos e pedidos usarem a loja do usuario logado, em vez da loja demo.
 - O sistema ja esta preparado para gravar pedidos e produtos no PostgreSQL.
 - Agora tambem existe base de cadastro/login para a loja, com sessao segura quando houver banco real.
 - O painel interno ja exige login e permite sair da conta.
+- Produtos, pedidos e link do portal agora usam a loja do usuario logado quando ha banco real.
 
 ## Versionamento
 

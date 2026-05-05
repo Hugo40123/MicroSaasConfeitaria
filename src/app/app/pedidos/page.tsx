@@ -1,10 +1,12 @@
 import { StatusBadge } from "@/components/status-badge";
+import { requireAuthUser } from "@/lib/current-user";
 import { listOrdersForCurrentStore } from "@/lib/order-persistence";
 import { formatCurrency } from "@/lib/sample-data";
 import { CheckCircle2, Filter, Plus, Search, Send } from "lucide-react";
 
 export default async function OrdersPage() {
-  const ordersResult = await listOrdersForCurrentStore();
+  const user = await requireAuthUser();
+  const ordersResult = await listOrdersForCurrentStore(user.storeId);
   const orders = ordersResult.data;
 
   return (

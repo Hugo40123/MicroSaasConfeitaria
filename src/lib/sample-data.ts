@@ -41,6 +41,10 @@ export type Order = {
   total: number;
   paidSignal: number;
   urgent?: boolean;
+  storeName?: string;
+  storeSlug?: string;
+  storePhone?: string;
+  storeAddress?: string;
 };
 
 export const store = {

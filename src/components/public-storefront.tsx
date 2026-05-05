@@ -1,6 +1,7 @@
 "use client";
 
-import { formatCurrency, store, type Product } from "@/lib/sample-data";
+import type { StoreProfile } from "@/lib/product-repository";
+import { formatCurrency, type Product } from "@/lib/sample-data";
 import {
   CalendarDays,
   CheckCircle2,
@@ -26,9 +27,11 @@ const categories = ["Todos", "Bolos inteiros", "Fatias", "Doces", "Extras"] as c
 
 export function PublicStorefront({
   products,
+  store,
   source
 }: {
   products: Product[];
+  store: StoreProfile;
   source: "database" | "mock";
 }) {
   const [activeCategory, setActiveCategory] =
@@ -143,6 +146,11 @@ export function PublicStorefront({
   }
 
   if (createdOrder) {
+    const whatsappDigits = store.phone.replace(/\D/g, "");
+    const whatsappHref = whatsappDigits
+      ? `https://wa.me/${whatsappDigits.startsWith("55") ? whatsappDigits : `55${whatsappDigits}`}`
+      : "#";
+
     return (
       <main className="storefront">
         <section className="store-hero">
@@ -161,7 +169,7 @@ export function PublicStorefront({
               <CheckCircle2 aria-hidden="true" />
               Acompanhar pedido
             </a>
-            <a className="btn btn-secondary" href="https://wa.me/5511999992323">
+            <a className="btn btn-secondary" href={whatsappHref}>
               <Send aria-hidden="true" />
               Chamar no WhatsApp
             </a>

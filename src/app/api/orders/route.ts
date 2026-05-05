@@ -2,6 +2,7 @@ import {
   createCustomerPortalOrder,
   listOrdersForCurrentStore
 } from "@/lib/order-persistence";
+import { getCurrentUserFromRequest } from "@/lib/current-user";
 import {
   OrderValidationError,
   parseCustomerOrderInput
@@ -9,7 +10,20 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
-  const ordersResult = await listOrdersForCurrentStore();
+  const user = await getCurrentUserFromRequest();
+
+  if (!user) {
+    return NextResponse.json(
+      {
+        error: {
+          message: "Login necessario para listar pedidos."
+        }
+      },
+      { status: 401 }
+    );
+  }
+
+  const ordersResult = await listOrdersForCurrentStore(user.storeId);
 
   return NextResponse.json({
     data: ordersResult.data,
