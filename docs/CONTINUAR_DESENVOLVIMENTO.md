@@ -174,6 +174,17 @@ git status
 git push
 ```
 
+## CI
+
+O workflow `.github/workflows/ci.yml` valida push e pull request com:
+
+```bash
+npm ci
+npm run prisma:generate
+npm run typecheck
+npm run build
+```
+
 ## Deploy
 
 Use `docs/DEPLOY.md` para publicar com PostgreSQL remoto. Antes de deploy, rode

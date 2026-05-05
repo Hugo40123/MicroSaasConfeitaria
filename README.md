@@ -109,3 +109,5 @@ Para continuar o desenvolvimento em outra conta ou maquina, consulte `docs/CONTI
 Para publicar o MVP com PostgreSQL remoto, consulte `docs/DEPLOY.md`.
 
 O endpoint `/api/health` ajuda a verificar readiness de banco e storage apos deploy.
+
+O GitHub Actions roda `npm ci`, `prisma:generate`, `typecheck` e `build` a cada push/PR.
