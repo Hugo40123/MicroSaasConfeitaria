@@ -84,6 +84,7 @@ function mapDbProductToUiProduct(product: DbProduct): Product {
     preparationTime: toPreparationText(product.preparationHours),
     online: product.availableOnline,
     active: product.active,
+    imageUrl: product.imageUrl ?? "",
     artBg: art.artBg,
     artShape: art.artShape
   };

@@ -5,6 +5,7 @@ import { getPrismaClient, isDatabaseConfigured } from "@/lib/prisma";
 import type { ProductCategoryValue } from "@/lib/product-repository";
 import { saveProductImage } from "@/lib/upload-storage";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 const productCategories = new Set<ProductCategoryValue>([
   "WHOLE_CAKE",
@@ -116,80 +117,116 @@ function revalidateProductViews(storeSlug: string) {
   revalidatePath(`/loja/${storeSlug}`);
 }
 
+function getActionErrorMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Nao foi possivel salvar o produto. Tente novamente.";
+}
+
+function redirectWithProductError(error: unknown): never {
+  redirect(`/app/produtos?productError=${encodeURIComponent(getActionErrorMessage(error))}`);
+}
+
 export async function createProductAction(formData: FormData) {
-  ensureDatabaseConfigured();
+  try {
+    ensureDatabaseConfigured();
 
-  const user = await requirePermission("manage_products");
-  const prisma = getPrismaClient();
-  const input = await parseProductForm(formData);
+    const user = await requirePermission("manage_products");
+    const prisma = getPrismaClient();
+    const input = await parseProductForm(formData);
 
-  await prisma.product.create({
-    data: {
-      storeId: user.storeId,
-      ...input
-    }
-  });
+    await prisma.product.create({
+      data: {
+        storeId: user.storeId,
+        ...input
+      }
+    });
 
-  revalidateProductViews(user.storeSlug);
+    revalidateProductViews(user.storeSlug);
+  } catch (error) {
+    redirectWithProductError(error);
+  }
+
+  redirect("/app/produtos?productSuccess=Produto%20criado%20com%20sucesso.");
 }
 
 export async function updateProductAction(formData: FormData) {
-  ensureDatabaseConfigured();
+  try {
+    ensureDatabaseConfigured();
 
-  const user = await requirePermission("manage_products");
-  const prisma = getPrismaClient();
-  const productId = parseRequiredString(formData, "productId", "Produto");
-  const input = await parseProductForm(formData);
+    const user = await requirePermission("manage_products");
+    const prisma = getPrismaClient();
+    const productId = parseRequiredString(formData, "productId", "Produto");
+    const input = await parseProductForm(formData);
 
-  await prisma.product.updateMany({
-    where: {
-      id: productId,
-      storeId: user.storeId
-    },
-    data: input
-  });
+    await prisma.product.updateMany({
+      where: {
+        id: productId,
+        storeId: user.storeId
+      },
+      data: input
+    });
 
-  revalidateProductViews(user.storeSlug);
+    revalidateProductViews(user.storeSlug);
+  } catch (error) {
+    redirectWithProductError(error);
+  }
+
+  redirect("/app/produtos?productSuccess=Produto%20atualizado%20com%20sucesso.");
 }
 
 export async function toggleProductActiveAction(formData: FormData) {
-  ensureDatabaseConfigured();
+  try {
+    ensureDatabaseConfigured();
 
-  const user = await requirePermission("manage_products");
-  const prisma = getPrismaClient();
-  const productId = parseRequiredString(formData, "productId", "Produto");
-  const active = getString(formData, "active") === "true";
+    const user = await requirePermission("manage_products");
+    const prisma = getPrismaClient();
+    const productId = parseRequiredString(formData, "productId", "Produto");
+    const active = getString(formData, "active") === "true";
 
-  await prisma.product.updateMany({
-    where: {
-      id: productId,
-      storeId: user.storeId
-    },
-    data: {
-      active
-    }
-  });
+    await prisma.product.updateMany({
+      where: {
+        id: productId,
+        storeId: user.storeId
+      },
+      data: {
+        active
+      }
+    });
 
-  revalidateProductViews(user.storeSlug);
+    revalidateProductViews(user.storeSlug);
+  } catch (error) {
+    redirectWithProductError(error);
+  }
+
+  redirect("/app/produtos?productSuccess=Status%20do%20produto%20atualizado.");
 }
 
 export async function toggleProductOnlineAction(formData: FormData) {
-  ensureDatabaseConfigured();
+  try {
+    ensureDatabaseConfigured();
 
-  const user = await requirePermission("manage_products");
-  const prisma = getPrismaClient();
-  const productId = parseRequiredString(formData, "productId", "Produto");
-  const availableOnline = getString(formData, "availableOnline") === "true";
+    const user = await requirePermission("manage_products");
+    const prisma = getPrismaClient();
+    const productId = parseRequiredString(formData, "productId", "Produto");
+    const availableOnline = getString(formData, "availableOnline") === "true";
 
-  await prisma.product.updateMany({
-    where: {
-      id: productId,
-      storeId: user.storeId
-    },
-    data: {
-      availableOnline
-    }
-  });
+    await prisma.product.updateMany({
+      where: {
+        id: productId,
+        storeId: user.storeId
+      },
+      data: {
+        availableOnline
+      }
+    });
 
-  revalidateProductViews(user.storeSlug);
+    revalidateProductViews(user.storeSlug);
+  } catch (error) {
+    redirectWithProductError(error);
+  }
+
+  redirect("/app/produtos?productSuccess=Visibilidade%20do%20produto%20atualizada.");
 }

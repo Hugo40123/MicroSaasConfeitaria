@@ -1,4 +1,5 @@
 import { requirePermission } from "@/lib/current-user";
+import { ProductImageInput } from "@/components/product-image-input";
 import {
   createProductAction,
   toggleProductActiveAction,
@@ -136,17 +137,7 @@ function ProductForm({
         />
       </label>
 
-      <label className="field">
-        <span>Upload de imagem</span>
-        <input
-          accept="image/jpeg,image/png,image/webp"
-          className="input"
-          disabled={disabled}
-          name="imageFile"
-          type="file"
-        />
-        <small className="field-hint">JPG, PNG ou WebP ate 2 MB.</small>
-      </label>
+      <ProductImageInput disabled={disabled} />
 
       <div className="toggle-row">
         <label className="check-field">
@@ -179,8 +170,16 @@ function ProductForm({
   );
 }
 
-export default async function ProductsPage() {
+export default async function ProductsPage({
+  searchParams
+}: {
+  searchParams?: Promise<{
+    productError?: string;
+    productSuccess?: string;
+  }>;
+}) {
   const user = await requirePermission("manage_products");
+  const params = await searchParams;
   const productsResult = await listProductsForCurrentStore(user.storeId);
   const products = productsResult.data;
   const isMock = productsResult.source === "mock";
@@ -203,6 +202,16 @@ export default async function ProductsPage() {
             <p className="form-error" style={{ marginTop: "0.9rem" }}>
               CRUD desabilitado enquanto o PostgreSQL real nao estiver configurado.
               Configure `DATABASE_URL`, rode as migrations e volte aqui para gravar produtos.
+            </p>
+          ) : null}
+          {params?.productError ? (
+            <p className="form-error" style={{ marginTop: "0.9rem" }}>
+              {params.productError}
+            </p>
+          ) : null}
+          {params?.productSuccess ? (
+            <p className="form-success" style={{ marginTop: "0.9rem" }}>
+              {params.productSuccess}
             </p>
           ) : null}
         </div>

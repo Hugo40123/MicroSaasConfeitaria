@@ -554,6 +554,13 @@ th {
   line-height: 1.35;
 }
 
+.field-error {
+  color: var(--danger);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .field label,
 .field > span {
   color: var(--muted);
@@ -809,6 +816,18 @@ th {
   border-radius: 8px;
   background: var(--danger-soft);
   color: var(--danger);
+  padding: 0.75rem 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.form-success {
+  margin: 0;
+  border: 1px solid var(--mint);
+  border-radius: 8px;
+  background: var(--mint-soft);
+  color: var(--mint);
   padding: 0.75rem 0.85rem;
   font-size: 0.88rem;
   font-weight: 750;

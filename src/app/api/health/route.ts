@@ -29,7 +29,7 @@ async function checkDatabase() {
 
 export async function GET() {
   const database = await checkDatabase();
-  const storage = getStorageHealth();
+  const storage = await getStorageHealth();
   const ready = database.connected && storage.configured;
 
   return NextResponse.json(

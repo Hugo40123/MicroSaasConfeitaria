@@ -13,7 +13,48 @@ export function getStorageDriver() {
   return process.env.UPLOAD_STORAGE_DRIVER?.trim().toLowerCase() || "local";
 }
 
-export function getStorageHealth() {
+export async function getStorageHealth() {
+  const driver = getStorageDriver();
+
+  if (driver === "supabase") {
+    const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const bucket = process.env.SUPABASE_STORAGE_BUCKET;
+
+    if (!supabaseUrl || !serviceRoleKey || !bucket) {
+      return {
+        driver,
+        configured: false
+      };
+    }
+
+    try {
+      const response = await fetch(`${supabaseUrl}/storage/v1/bucket/${bucket}`, {
+        headers: {
+          apikey: serviceRoleKey,
+          authorization: `Bearer ${serviceRoleKey}`
+        }
+      });
+
+      return {
+        driver,
+        configured: response.ok
+      };
+    } catch {
+      return {
+        driver,
+        configured: false
+      };
+    }
+  }
+
+  return {
+    driver: "local",
+    configured: true
+  };
+}
+
+export function getStorageConfigStatus() {
   const driver = getStorageDriver();
 
   if (driver === "supabase") {
