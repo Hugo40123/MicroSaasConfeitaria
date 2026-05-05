@@ -16,7 +16,7 @@ export async function GET() {
     return NextResponse.json(
       {
         error: {
-          message: "Login necessario para listar pedidos."
+          message: "Login necessário para listar pedidos."
         }
       },
       { status: 401 }
@@ -32,7 +32,7 @@ export async function GET() {
       message:
         ordersResult.source === "database"
           ? "Pedidos carregados do PostgreSQL."
-          : "Usando dados mockados ate DATABASE_URL apontar para um banco real."
+          : "Usando dados mockados até DATABASE_URL apontar para um banco real."
     }
   });
 }
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
           message:
             orderResult.source === "database"
               ? "Pedido gravado no PostgreSQL."
-              : "Pedido validado no servidor. Persistencia sera usada quando DATABASE_URL apontar para um banco real."
+              : "Pedido validado no servidor. Persistência será usada quando DATABASE_URL apontar para um banco real."
         }
       },
       { status: 201 }
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: {
-            message: "Nao foi possivel criar o pedido.",
+            message: "Não foi possível criar o pedido.",
             issues: error.issues
           }
         },

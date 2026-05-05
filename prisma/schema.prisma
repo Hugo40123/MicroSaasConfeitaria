@@ -161,6 +161,7 @@ model Order {
   customerName       String
   customerPhone      String
   deliveryAddress    String?
+  deliveryFee        Decimal         @default(0) @db.Decimal(10, 2)
   customerNotes      String?
   internalNotes      String?
   urgent             Boolean         @default(false)

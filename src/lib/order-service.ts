@@ -13,6 +13,8 @@ export type CustomerOrderInput = {
   fulfillment: "Retirada" | "Entrega";
   deliveryAddress?: string;
   deliveryDate: string;
+  deliveryTime?: string;
+  paymentMethod: "Dinheiro" | "PIX" | "Cartão";
   customerNotes?: string;
   items: CustomerOrderItemInput[];
 };
@@ -26,6 +28,9 @@ export type CustomerOrderResult = {
   fulfillment: "Retirada" | "Entrega";
   deliveryAddress?: string;
   deliveryDate: string;
+  deliveryTime?: string;
+  paymentMethod: "Dinheiro" | "PIX" | "Cartão";
+  deliveryFee: number;
   customerNotes?: string;
   items: {
     productId: string;
@@ -73,6 +78,8 @@ const makeOrderCode = () => {
   return `BM-${suffix}`;
 };
 
+export const CUSTOMER_DELIVERY_FEE = 5;
+
 export function parseCustomerOrderInput(payload: unknown): CustomerOrderInput {
   if (!isRecord(payload)) {
     throw new OrderValidationError(["Envie os dados do pedido em JSON."]);
@@ -87,23 +94,36 @@ export function parseCustomerOrderInput(payload: unknown): CustomerOrderInput {
       : null;
   const deliveryAddress = toText(payload.deliveryAddress);
   const deliveryDate = toText(payload.deliveryDate);
+  const deliveryTime = toText(payload.deliveryTime);
+  const paymentMethod =
+    payload.paymentMethod === "Dinheiro" ||
+    payload.paymentMethod === "PIX" ||
+    payload.paymentMethod === "Cartão"
+      ? payload.paymentMethod
+      : null;
   const customerNotes = toText(payload.customerNotes);
   const rawItems = Array.isArray(payload.items) ? payload.items : [];
   const issues: string[] = [];
 
-  if (storeSlug.length < 2) issues.push("Loja invalida.");
+  if (storeSlug.length < 2) issues.push("Loja inválida.");
   if (customerName.length < 3) issues.push("Informe o nome do cliente.");
   if (customerWhatsapp.replace(/\D/g, "").length < 10) {
-    issues.push("Informe um WhatsApp valido.");
+    issues.push("Informe um WhatsApp válido.");
   }
   if (!fulfillment) {
     issues.push("Escolha retirada ou entrega.");
   }
   if (fulfillment === "Entrega" && deliveryAddress.length < 5) {
-    issues.push("Informe o endereco de entrega.");
+    issues.push("Informe o endereço de entrega.");
   }
   if (!hasValidDeliveryDate(deliveryDate)) {
-    issues.push("Escolha uma data de entrega valida.");
+    issues.push("Escolha uma data de entrega válida.");
+  }
+  if (deliveryTime && !/^\d{2}:\d{2}$/.test(deliveryTime)) {
+    issues.push("Informe um horário desejado válido.");
+  }
+  if (!paymentMethod) {
+    issues.push("Escolha a forma de pagamento.");
   }
   if (rawItems.length === 0) issues.push("Adicione pelo menos um produto.");
 
@@ -133,6 +153,9 @@ export function parseCustomerOrderInput(payload: unknown): CustomerOrderInput {
   if (!fulfillment) {
     throw new OrderValidationError(["Escolha retirada ou entrega."]);
   }
+  if (!paymentMethod) {
+    throw new OrderValidationError(["Escolha a forma de pagamento."]);
+  }
 
   return {
     storeSlug,
@@ -141,6 +164,8 @@ export function parseCustomerOrderInput(payload: unknown): CustomerOrderInput {
     fulfillment,
     deliveryAddress: fulfillment === "Entrega" ? deliveryAddress : undefined,
     deliveryDate,
+    deliveryTime: deliveryTime || undefined,
+    paymentMethod,
     customerNotes: customerNotes || undefined,
     items
   };
@@ -153,7 +178,7 @@ export function createCustomerPortalOrder(
     const product = products.find((current) => current.id === item.productId);
 
     if (!product) {
-      throw new OrderValidationError(["Produto nao encontrado."]);
+      throw new OrderValidationError(["Produto não encontrado."]);
     }
 
     const totalPrice = product.price * item.quantity;
@@ -168,7 +193,8 @@ export function createCustomerPortalOrder(
     };
   });
   const code = makeOrderCode();
-  const totalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  const itemsAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  const deliveryFee = input.fulfillment === "Entrega" ? CUSTOMER_DELIVERY_FEE : 0;
 
   return {
     code,
@@ -179,8 +205,11 @@ export function createCustomerPortalOrder(
     fulfillment: input.fulfillment,
     deliveryAddress: input.deliveryAddress,
     deliveryDate: input.deliveryDate,
+    deliveryTime: input.deliveryTime,
+    paymentMethod: input.paymentMethod,
+    deliveryFee,
     customerNotes: input.customerNotes,
     items,
-    totalAmount
+    totalAmount: itemsAmount + deliveryFee
   };
 }

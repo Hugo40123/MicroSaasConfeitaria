@@ -9,7 +9,7 @@ const timelineSteps = [
   {
     status: "aguardando_confirmacao",
     title: "Pedido enviado",
-    description: "A loja recebeu sua solicitacao."
+    description: "A loja recebeu sua solicitação e vai confirmar pelo WhatsApp."
   },
   {
     status: "confirmado",
@@ -18,8 +18,8 @@ const timelineSteps = [
   },
   {
     status: "em_producao",
-    title: "Em producao",
-    description: "Seu pedido esta sendo preparado."
+    title: "Em produção",
+    description: "Seu pedido está sendo preparado."
   },
   {
     status: "pronto",
@@ -29,7 +29,7 @@ const timelineSteps = [
   {
     status: "entregue",
     title: "Entregue",
-    description: "Pedido concluido."
+    description: "Pedido concluído."
   }
 ] as const;
 
@@ -70,7 +70,7 @@ export default async function TrackingPage({
             <p className="eyebrow">Acompanhamento</p>
             <h1>Pedido {order.code}</h1>
             <p>
-              {order.customer} - {order.items.join(", ")} - {order.deliveryDate} as{" "}
+              {order.customer} - {order.items.join(", ")} - {order.deliveryDate} às{" "}
               {order.deliveryTime}
             </p>
           </div>
@@ -128,6 +128,15 @@ export default async function TrackingPage({
             <p className="muted">{storeAddress}</p>
             <div className="meta-row">
               <span className="badge neutral">{order.fulfillment}</span>
+              <span className="badge neutral">
+                {order.paymentMethod ?? "Pagamento a combinar"}
+              </span>
+              {order.deliveryFee ? (
+                <span className="badge neutral">Frete {order.deliveryFee.toLocaleString("pt-BR", {
+                  currency: "BRL",
+                  style: "currency"
+                })}</span>
+              ) : null}
               <span className="badge neutral">{storePhone}</span>
             </div>
             <Link className="btn btn-primary" href={`/loja/${storeSlug}`}>

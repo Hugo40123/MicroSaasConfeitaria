@@ -30,8 +30,10 @@ type CreatedOrder = {
 };
 
 type StorefrontStep = "menu" | "product" | "cart" | "checkout";
+type PaymentMethod = "Dinheiro" | "PIX" | "Cartão";
 
 const categories = ["Todos", "Bolos inteiros", "Fatias", "Doces", "Extras"] as const;
+const deliveryFeeAmount = 5;
 
 export function PublicStorefront({
   products,
@@ -49,6 +51,7 @@ export function PublicStorefront({
   const [step, setStep] = useState<StorefrontStep>("menu");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [fulfillment, setFulfillment] = useState<"Retirada" | "Entrega">("Retirada");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("PIX");
   const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,6 +81,8 @@ export function PublicStorefront({
   );
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const featuredProducts = visibleProducts.slice(0, 2);
+  const deliveryFee = fulfillment === "Entrega" ? deliveryFeeAmount : 0;
+  const orderTotal = total + deliveryFee;
 
   function addProduct(product: Product) {
     setCart((current) => ({
@@ -136,6 +141,8 @@ export function PublicStorefront({
       fulfillment,
       deliveryAddress: String(formData.get("deliveryAddress") ?? ""),
       deliveryDate: String(formData.get("deliveryDate") ?? ""),
+      deliveryTime: String(formData.get("deliveryTime") ?? ""),
+      paymentMethod,
       customerNotes: String(formData.get("customerNotes") ?? ""),
       items: cartItems.map((item) => ({
         productId: item.product.id,
@@ -528,6 +535,8 @@ export function PublicStorefront({
                 </div>
               </div>
 
+              <input name="paymentMethod" type="hidden" value={paymentMethod} />
+
               <div className="checkout-choice-grid">
                 <button
                   className={`btn ${fulfillment === "Retirada" ? "btn-primary" : "btn-secondary"}`}
@@ -559,38 +568,80 @@ export function PublicStorefront({
                 </div>
               ) : null}
 
-              <div className="field">
-                <label htmlFor="delivery-date">Data desejada</label>
-                <span style={{ position: "relative" }}>
-                  <CalendarDays
-                    aria-hidden="true"
-                    style={{
-                      color: "var(--muted)",
-                      height: "1rem",
-                      left: "0.8rem",
-                      position: "absolute",
-                      top: "0.88rem",
-                      width: "1rem"
-                    }}
-                  />
-                  <input
-                    className="input"
-                    id="delivery-date"
-                    name="deliveryDate"
-                    required
-                    style={{ paddingLeft: "2.25rem" }}
-                    type="date"
-                  />
-                </span>
+              <div className="checkout-fields">
+                <div className="field">
+                  <label htmlFor="delivery-date">Data desejada</label>
+                  <span style={{ position: "relative" }}>
+                    <CalendarDays
+                      aria-hidden="true"
+                      style={{
+                        color: "var(--muted)",
+                        height: "1rem",
+                        left: "0.8rem",
+                        position: "absolute",
+                        top: "0.88rem",
+                        width: "1rem"
+                      }}
+                    />
+                    <input
+                      className="input"
+                      id="delivery-date"
+                      name="deliveryDate"
+                      required
+                      style={{ paddingLeft: "2.25rem" }}
+                      type="date"
+                    />
+                  </span>
+                </div>
+
+                <div className="field">
+                  <label htmlFor="delivery-time">Horário desejado</label>
+                  <span style={{ position: "relative" }}>
+                    <Clock3
+                      aria-hidden="true"
+                      style={{
+                        color: "var(--muted)",
+                        height: "1rem",
+                        left: "0.8rem",
+                        position: "absolute",
+                        top: "0.88rem",
+                        width: "1rem"
+                      }}
+                    />
+                    <input
+                      className="input"
+                      id="delivery-time"
+                      name="deliveryTime"
+                      style={{ paddingLeft: "2.25rem" }}
+                      type="time"
+                    />
+                  </span>
+                </div>
               </div>
 
               <div className="field">
-                <label htmlFor="notes">Observacoes</label>
+                <span>Forma de pagamento</span>
+                <div className="checkout-choice-grid">
+                  {(["PIX", "Dinheiro", "Cartão"] as const).map((method) => (
+                    <button
+                      className={`btn ${paymentMethod === method ? "btn-primary" : "btn-secondary"}`}
+                      key={method}
+                      onClick={() => setPaymentMethod(method)}
+                      type="button"
+                    >
+                      {method}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="field">
+                <label htmlFor="notes">Observações</label>
                 <textarea
                   className="textarea"
                   id="notes"
                   name="customerNotes"
-                  placeholder="Tema, restricoes, mensagem no bolo..."
+                  placeholder="Tema, restrições, mensagem no bolo..."
                 />
               </div>
 
@@ -601,11 +652,17 @@ export function PublicStorefront({
                 </div>
                 <div>
                   <span>Frete</span>
-                  <strong>A combinar</strong>
+                  <strong>
+                    {fulfillment === "Entrega" ? formatCurrency(deliveryFee) : "R$ 0,00"}
+                  </strong>
+                </div>
+                <div>
+                  <span>Pagamento</span>
+                  <strong>{paymentMethod}</strong>
                 </div>
                 <div className="total-row">
                   <span>Total estimado</span>
-                  <span>{formatCurrency(total)}</span>
+                  <span>{formatCurrency(orderTotal)}</span>
                 </div>
               </div>
 

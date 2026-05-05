@@ -2,6 +2,7 @@ import type { Order } from "@/lib/sample-data";
 import { orders } from "@/lib/sample-data";
 import {
   createCustomerPortalOrder as createMockCustomerPortalOrder,
+  CUSTOMER_DELIVERY_FEE,
   type CustomerOrderInput,
   type CustomerOrderResult,
   OrderValidationError
@@ -30,9 +31,9 @@ export type DatabaseOrderStatus =
   | "CANCELLED";
 
 export const orderStatusOptions = [
-  { value: "AWAITING_CONFIRMATION", label: "Aguardando confirmacao" },
+  { value: "AWAITING_CONFIRMATION", label: "Aguardando confirmação" },
   { value: "CONFIRMED", label: "Confirmado" },
-  { value: "IN_PRODUCTION", label: "Em producao" },
+  { value: "IN_PRODUCTION", label: "Em produção" },
   { value: "READY", label: "Pronto" },
   { value: "OUT_FOR_DELIVERY", label: "Saiu para entrega" },
   { value: "DELIVERED", label: "Entregue" },
@@ -74,6 +75,18 @@ const fulfillmentMap = {
   DELIVERY: "Entrega"
 } as const;
 
+const paymentMethodMap = {
+  CASH: "Dinheiro",
+  PIX: "PIX",
+  CARD: "Cartão"
+} as const;
+
+const paymentMethodToDatabaseMap = {
+  Dinheiro: "CASH",
+  PIX: "PIX",
+  Cartão: "CARD"
+} as const;
+
 const toMoney = (value: unknown) => Number(value ?? 0);
 
 const formatDeliveryDate = (value: Date | null) => {
@@ -89,7 +102,7 @@ const formatDeliveryDate = (value: Date | null) => {
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
-  if (tomorrow.getTime() === deliveryDate.getTime()) return "Amanha";
+  if (tomorrow.getTime() === deliveryDate.getTime()) return "Amanhã";
 
   return new Intl.DateTimeFormat("pt-BR").format(deliveryDate);
 };
@@ -110,6 +123,8 @@ function mapDbOrderToUiOrder(order: DbOrderForUi): Order {
     deliveryDate: formatDeliveryDate(order.deliveryDate),
     deliveryTime: order.deliveryTime ?? "A combinar",
     fulfillment: fulfillmentMap[order.fulfillmentType],
+    paymentMethod: order.paymentMethod ? paymentMethodMap[order.paymentMethod] : undefined,
+    deliveryFee: toMoney(order.deliveryFee),
     status: statusMap[order.status],
     total: toMoney(order.totalAmount),
     paidSignal: toMoney(order.signalAmount),
@@ -129,6 +144,8 @@ function makePendingTrackingOrder(code: string): Order {
     customer: "Cliente",
     items: ["Pedido enviado pelo portal"],
     status: "aguardando_confirmacao",
+    paymentMethod: "PIX",
+    deliveryFee: 0,
     total: 0,
     paidSignal: 0
   };
@@ -221,19 +238,19 @@ export async function createCustomerPortalOrder(
     });
 
     if (!store) {
-      throw new OrderValidationError(["Loja nao encontrada."]);
+      throw new OrderValidationError(["Loja não encontrada."]);
     }
 
     if (!store.onlineOrdersEnabled) {
-      throw new OrderValidationError(["A loja nao esta aceitando pedidos online."]);
+      throw new OrderValidationError(["A loja não está aceitando pedidos online."]);
     }
 
     if (input.fulfillment === "Entrega" && !store.deliveryEnabled) {
-      throw new OrderValidationError(["A loja nao aceita entrega no momento."]);
+      throw new OrderValidationError(["A loja não aceita entrega no momento."]);
     }
 
     if (input.fulfillment === "Retirada" && !store.pickupEnabled) {
-      throw new OrderValidationError(["A loja nao aceita retirada no momento."]);
+      throw new OrderValidationError(["A loja não aceita retirada no momento."]);
     }
 
     const productIds = [...new Set(input.items.map((item) => item.productId))];
@@ -251,7 +268,7 @@ export async function createCustomerPortalOrder(
 
     if (productsById.size !== productIds.length) {
       throw new OrderValidationError([
-        "Um produto do carrinho nao esta disponivel."
+        "Um produto do carrinho não está disponível."
       ]);
     }
 
@@ -260,7 +277,7 @@ export async function createCustomerPortalOrder(
 
       if (!product) {
         throw new OrderValidationError([
-          "Um produto do carrinho nao esta disponivel."
+          "Um produto do carrinho não está disponível."
         ]);
       }
 
@@ -276,7 +293,10 @@ export async function createCustomerPortalOrder(
         customizationNotes: item.customizationNotes || undefined
       };
     });
-    const totalAmount = orderItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    const itemsAmount = orderItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    const deliveryFee =
+      input.fulfillment === "Entrega" ? CUSTOMER_DELIVERY_FEE : 0;
+    const totalAmount = itemsAmount + deliveryFee;
     const phone = input.customerWhatsapp.replace(/\D/g, "");
     const code = makeOrderCode();
     const customer = await tx.customer.upsert({
@@ -309,9 +329,12 @@ export async function createCustomerPortalOrder(
         status: "AWAITING_CONFIRMATION",
         fulfillmentType: input.fulfillment === "Entrega" ? "DELIVERY" : "PICKUP",
         deliveryDate: new Date(`${input.deliveryDate}T00:00:00`),
+        deliveryTime: input.deliveryTime,
         customerName: input.customerName,
         customerPhone: phone,
         deliveryAddress: input.deliveryAddress,
+        deliveryFee,
+        paymentMethod: paymentMethodToDatabaseMap[input.paymentMethod],
         customerNotes: input.customerNotes,
         totalAmount,
         publicTrackingCode: code,
@@ -337,6 +360,9 @@ export async function createCustomerPortalOrder(
       fulfillment: input.fulfillment,
       deliveryAddress: input.deliveryAddress,
       deliveryDate: input.deliveryDate,
+      deliveryTime: input.deliveryTime,
+      paymentMethod: input.paymentMethod,
+      deliveryFee,
       customerNotes: input.customerNotes,
       items: orderItems,
       totalAmount

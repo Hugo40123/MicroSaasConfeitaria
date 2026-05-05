@@ -117,6 +117,15 @@ export default async function OrdersPage() {
                 </select>
               </label>
               <label className="field">
+                <span>Pagamento</span>
+                <select className="select" defaultValue="" disabled={isMock} name="paymentMethod">
+                  <option value="">A combinar</option>
+                  <option value="CASH">Dinheiro</option>
+                  <option value="PIX">PIX</option>
+                  <option value="CARD">Cartão</option>
+                </select>
+              </label>
+              <label className="field">
                 <span>Data</span>
                 <input className="input" disabled={isMock} name="deliveryDate" required type="date" />
               </label>
@@ -207,13 +216,20 @@ export default async function OrdersPage() {
                       {order.deliveryDate} - {order.deliveryTime}
                     </strong>
                     <p className="muted">{order.items.join(", ")}</p>
+                    <p className="muted">
+                      {order.fulfillment}
+                      {order.deliveryFee ? ` + frete ${formatCurrency(order.deliveryFee)}` : ""}
+                    </p>
                   </td>
                   <td data-label="Status">
                     <StatusBadge status={order.status} />
                   </td>
                   <td data-label="Total">
                     <strong>{formatCurrency(order.total)}</strong>
-                    <p className="muted">Sinal {formatCurrency(order.paidSignal)}</p>
+                    <p className="muted">
+                      {order.paymentMethod ?? "Pagamento a combinar"} · Sinal{" "}
+                      {formatCurrency(order.paidSignal)}
+                    </p>
                   </td>
                   <td data-label="Ações">
                     <div className="row-actions">

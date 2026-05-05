@@ -11,6 +11,8 @@ import { revalidatePath } from "next/cache";
 const allowedStatuses = new Set<DatabaseOrderStatus>(
   orderStatusOptions.map((status) => status.value)
 );
+type DatabasePaymentMethod = "CASH" | "PIX" | "CARD";
+const paymentMethods = new Set<DatabasePaymentMethod>(["CASH", "PIX", "CARD"]);
 
 function getString(formData: FormData, field: string) {
   return String(formData.get(field) ?? "").trim();
@@ -44,6 +46,12 @@ function parseQuantity(formData: FormData) {
   }
 
   return quantity;
+}
+
+function parsePaymentMethod(formData: FormData) {
+  const paymentMethod = getString(formData, "paymentMethod") as DatabasePaymentMethod;
+
+  return paymentMethods.has(paymentMethod) ? paymentMethod : null;
 }
 
 function makeOrderCode() {
@@ -113,6 +121,7 @@ export async function createInternalOrderAction(formData: FormData) {
   const deliveryTime = getString(formData, "deliveryTime") || null;
   const deliveryAddress = getString(formData, "deliveryAddress") || null;
   const internalNotes = getString(formData, "internalNotes") || null;
+  const paymentMethod = parsePaymentMethod(formData);
   const quantity = parseQuantity(formData);
 
   if (customerPhone.length < 10) {
@@ -169,6 +178,7 @@ export async function createInternalOrderAction(formData: FormData) {
         customerName,
         customerPhone,
         deliveryAddress,
+        paymentMethod,
         internalNotes,
         totalAmount,
         publicTrackingCode: code,

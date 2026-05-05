@@ -38,6 +38,8 @@ export type Order = {
   deliveryDate: string;
   deliveryTime: string;
   fulfillment: "Retirada" | "Entrega";
+  paymentMethod?: "Dinheiro" | "PIX" | "Cartão";
+  deliveryFee?: number;
   status: OrderStatus;
   total: number;
   paidSignal: number;
@@ -143,6 +145,8 @@ export const orders: Order[] = [
     deliveryDate: "Hoje",
     deliveryTime: "16:00",
     fulfillment: "Retirada",
+    paymentMethod: "PIX",
+    deliveryFee: 0,
     status: "aguardando_confirmacao",
     total: 152,
     paidSignal: 0,
@@ -158,6 +162,8 @@ export const orders: Order[] = [
     deliveryDate: "Hoje",
     deliveryTime: "11:30",
     fulfillment: "Entrega",
+    paymentMethod: "Dinheiro",
+    deliveryFee: 5,
     status: "em_producao",
     total: 86,
     paidSignal: 40
@@ -172,6 +178,8 @@ export const orders: Order[] = [
     deliveryDate: "Amanha",
     deliveryTime: "10:00",
     fulfillment: "Retirada",
+    paymentMethod: "Cartão",
+    deliveryFee: 0,
     status: "confirmado",
     total: 145,
     paidSignal: 72.5
@@ -186,6 +194,8 @@ export const orders: Order[] = [
     deliveryDate: "Hoje",
     deliveryTime: "09:00",
     fulfillment: "Entrega",
+    paymentMethod: "PIX",
+    deliveryFee: 5,
     status: "pronto",
     total: 38,
     paidSignal: 38
