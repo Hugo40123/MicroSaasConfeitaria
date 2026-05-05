@@ -211,16 +211,20 @@ export function PublicStorefront({
         <div className="product-grid">
           {visibleProducts.map((product) => (
             <article className="product-card" key={product.id}>
-              <div
-                aria-hidden="true"
-                className="product-art"
-                style={
-                  {
-                    "--art-bg": product.artBg,
-                    "--art-shape": product.artShape
-                  } as CSSProperties
-                }
-              />
+              {product.imageUrl ? (
+                <img className="product-image" src={product.imageUrl} alt="" />
+              ) : (
+                <div
+                  aria-hidden="true"
+                  className="product-art"
+                  style={
+                    {
+                      "--art-bg": product.artBg,
+                      "--art-shape": product.artShape
+                    } as CSSProperties
+                  }
+                />
+              )}
               <div className="product-body">
                 <div className="product-title-row">
                   <div>

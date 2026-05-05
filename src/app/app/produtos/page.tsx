@@ -11,7 +11,7 @@ import {
   type AdminProduct
 } from "@/lib/product-repository";
 import { formatCurrency } from "@/lib/sample-data";
-import { Edit3, Eye, EyeOff, Globe2, GlobeLock, Plus, Search } from "lucide-react";
+import { Edit3, Eye, EyeOff, Globe2, GlobeLock, ImageUp, Plus, Search } from "lucide-react";
 
 function ProductForm({
   action,
@@ -25,7 +25,7 @@ function ProductForm({
   submitLabel: string;
 }) {
   return (
-    <form action={action} className="product-form">
+    <form action={action} className="product-form" encType="multipart/form-data">
       {product ? <input name="productId" type="hidden" value={product.id} /> : null}
 
       <div className="form-grid">
@@ -134,6 +134,18 @@ function ProductForm({
           name="imageUrl"
           type="url"
         />
+      </label>
+
+      <label className="field">
+        <span>Upload de imagem</span>
+        <input
+          accept="image/jpeg,image/png,image/webp"
+          className="input"
+          disabled={disabled}
+          name="imageFile"
+          type="file"
+        />
+        <small className="field-hint">JPG, PNG ou WebP ate 2 MB.</small>
       </label>
 
       <div className="toggle-row">
@@ -277,6 +289,13 @@ export default async function ProductsPage() {
               {products.map((product) => (
                 <tr key={product.id}>
                   <td>
+                    {product.imageUrl ? (
+                      <img
+                        alt=""
+                        className="product-thumb"
+                        src={product.imageUrl}
+                      />
+                    ) : null}
                     <strong>{product.name}</strong>
                     <p className="muted">{product.description}</p>
                   </td>
@@ -355,6 +374,18 @@ export default async function ProductsPage() {
                 </span>
                 <Edit3 aria-hidden="true" />
               </summary>
+              {product.imageUrl ? (
+                <img
+                  alt=""
+                  className="product-preview"
+                  src={product.imageUrl}
+                />
+              ) : (
+                <div className="image-placeholder">
+                  <ImageUp aria-hidden="true" />
+                  <span>Sem imagem cadastrada</span>
+                </div>
+              )}
               <ProductForm
                 action={updateProductAction}
                 disabled={isMock}

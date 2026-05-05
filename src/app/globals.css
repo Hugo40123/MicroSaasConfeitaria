@@ -525,6 +525,12 @@ th {
   gap: 0.35rem;
 }
 
+.field-hint {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
 .field label,
 .field > span {
   color: var(--muted);
@@ -642,6 +648,56 @@ th {
   min-height: 9rem;
   background: var(--art-bg, var(--rose-soft));
   position: relative;
+}
+
+.product-image,
+.product-preview,
+.product-thumb {
+  display: block;
+  object-fit: cover;
+}
+
+.product-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--surface-soft);
+}
+
+.product-preview {
+  width: min(100%, 320px);
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+}
+
+.product-thumb {
+  width: 3rem;
+  height: 3rem;
+  float: left;
+  margin-right: 0.75rem;
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.image-placeholder {
+  display: inline-flex;
+  width: min(100%, 320px);
+  min-height: 8rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: white;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+.image-placeholder svg {
+  width: 1.05rem;
+  height: 1.05rem;
 }
 
 .product-art::before {

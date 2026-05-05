@@ -61,7 +61,7 @@ Para detalhes de banco local, banco remoto e deploy de migrations, consulte `doc
 
 ## Proxima etapa
 
-Configurar upload de imagens de produtos.
+Salvar configuracoes reais da loja no banco.
 
 ## Resumo leigo das funcoes atuais
 
@@ -77,6 +77,7 @@ Configurar upload de imagens de produtos.
 - A pagina publica de acompanhamento reflete o status real do pedido.
 - Usuarios `ADMIN` acessam produtos, financeiro, relatorios e configuracoes.
 - Usuarios `ATTENDANT` acessam operacao diaria: resumo, pedidos, agenda, clientes e portal.
+- Produtos aceitam upload local de imagem JPG, PNG ou WebP ate 2 MB, salva em `public/uploads/products`.
 
 ## Acessos de desenvolvimento
 

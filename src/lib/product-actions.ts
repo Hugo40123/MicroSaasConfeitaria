@@ -3,7 +3,10 @@
 import { requirePermission } from "@/lib/current-user";
 import { getPrismaClient, isDatabaseConfigured } from "@/lib/prisma";
 import type { ProductCategoryValue } from "@/lib/product-repository";
+import { randomUUID } from "crypto";
+import { mkdir, writeFile } from "fs/promises";
 import { revalidatePath } from "next/cache";
+import path from "path";
 
 const productCategories = new Set<ProductCategoryValue>([
   "WHOLE_CAKE",
@@ -11,6 +14,12 @@ const productCategories = new Set<ProductCategoryValue>([
   "SWEET",
   "EXTRA",
   "CUSTOM"
+]);
+const imageMaxSizeBytes = 2 * 1024 * 1024;
+const allowedImageTypes = new Map([
+  ["image/jpeg", "jpg"],
+  ["image/png", "png"],
+  ["image/webp", "webp"]
 ]);
 
 function getString(formData: FormData, field: string) {
@@ -72,7 +81,35 @@ function parseProductCategory(formData: FormData) {
   return category;
 }
 
-function parseProductForm(formData: FormData) {
+async function saveUploadedImage(formData: FormData) {
+  const file = formData.get("imageFile");
+
+  if (!(file instanceof File) || file.size === 0) {
+    return getString(formData, "imageUrl") || null;
+  }
+
+  const extension = allowedImageTypes.get(file.type);
+
+  if (!extension) {
+    throw new Error("Envie uma imagem JPG, PNG ou WebP.");
+  }
+
+  if (file.size > imageMaxSizeBytes) {
+    throw new Error("A imagem deve ter no maximo 2 MB.");
+  }
+
+  const uploadsDir = path.join(process.cwd(), "public", "uploads", "products");
+  const fileName = `${randomUUID()}.${extension}`;
+  const filePath = path.join(uploadsDir, fileName);
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  await mkdir(uploadsDir, { recursive: true });
+  await writeFile(filePath, buffer);
+
+  return `/uploads/products/${fileName}`;
+}
+
+async function parseProductForm(formData: FormData) {
   return {
     name: parseRequiredString(formData, "name", "Nome"),
     category: parseProductCategory(formData),
@@ -89,7 +126,7 @@ function parseProductForm(formData: FormData) {
       "minOrderNoticeDays",
       "Antecedencia minima"
     ),
-    imageUrl: getString(formData, "imageUrl") || null,
+    imageUrl: await saveUploadedImage(formData),
     active: formData.get("active") === "on",
     availableOnline: formData.get("availableOnline") === "on"
   };
@@ -111,7 +148,7 @@ export async function createProductAction(formData: FormData) {
 
   const user = await requirePermission("manage_products");
   const prisma = getPrismaClient();
-  const input = parseProductForm(formData);
+  const input = await parseProductForm(formData);
 
   await prisma.product.create({
     data: {
@@ -129,7 +166,7 @@ export async function updateProductAction(formData: FormData) {
   const user = await requirePermission("manage_products");
   const prisma = getPrismaClient();
   const productId = parseRequiredString(formData, "productId", "Produto");
-  const input = parseProductForm(formData);
+  const input = await parseProductForm(formData);
 
   await prisma.product.updateMany({
     where: {

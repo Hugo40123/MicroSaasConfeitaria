@@ -104,13 +104,21 @@ A autenticacao tambem usa fallback:
   - `ATTENDANT`: acesso operacional a resumo, pedidos, agenda, clientes e portal.
 - Sem PostgreSQL real, use `admin@demo.local` ou `atendente@demo.local` com qualquer senha para testar os papeis.
 - Com seed em PostgreSQL real, use `admin@docemaria.local` / `admin123` e `atendente@docemaria.local` / `atendente123`.
+- Upload de produtos:
+  - imagens JPG, PNG e WebP ate 2 MB;
+  - arquivos locais em `public/uploads/products`;
+  - URL salva em `Product.imageUrl` e exibida no painel e no portal.
 
 ## Proximas etapas tecnicas
 
 1. Conectar o PostgreSQL local/remoto seguindo `docs/BANCO_DE_DADOS.md`.
 2. Rodar migrations e seed.
-3. Configurar upload de imagens de produtos.
-4. Criar integracao com WhatsApp e geracao de recibo.
+3. Salvar configuracoes reais da loja.
+4. Criar pedido interno pelo painel.
+5. Listar clientes reais do banco.
+6. Criar agenda real de producao.
+7. Criar financeiro real.
+8. Criar integracao com WhatsApp e geracao de recibo.
 
 ## Backup remoto
 

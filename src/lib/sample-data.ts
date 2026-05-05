@@ -23,6 +23,7 @@ export type Product = {
   preparationTime: string;
   online: boolean;
   active: boolean;
+  imageUrl?: string;
   artBg: string;
   artShape: string;
 };
