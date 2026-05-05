@@ -41,6 +41,12 @@ npm run typecheck
 npm run build
 ```
 
+Depois de publicar, rode o smoke test apontando para a URL final:
+
+```bash
+SMOKE_BASE_URL=https://seu-dominio.com npm run smoke
+```
+
 ## Uploads
 
 O upload atual salva arquivos em `public/uploads/products`. Isso funciona para

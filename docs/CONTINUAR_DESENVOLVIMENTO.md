@@ -55,6 +55,18 @@ npm run typecheck
 npm run build
 ```
 
+Com o servidor local rodando, valide o fluxo principal:
+
+```bash
+npm run smoke
+```
+
+Para testar outra URL:
+
+```bash
+SMOKE_BASE_URL=https://seu-dominio.com npm run smoke
+```
+
 ## Rotas importantes
 
 - `/app`: painel da loja
