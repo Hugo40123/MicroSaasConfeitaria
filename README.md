@@ -107,3 +107,5 @@ Este projeto deve ser mantido em Git. Arquivos sensiveis e gerados, como `.env`,
 Para continuar o desenvolvimento em outra conta ou maquina, consulte `docs/CONTINUAR_DESENVOLVIMENTO.md`.
 
 Para publicar o MVP com PostgreSQL remoto, consulte `docs/DEPLOY.md`.
+
+O endpoint `/api/health` ajuda a verificar readiness de banco e storage apos deploy.

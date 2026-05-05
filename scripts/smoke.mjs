@@ -63,6 +63,11 @@ async function expectOk(path, cookie, label, options = {}) {
 async function main() {
   console.log(`Smoke test em ${baseUrl}`);
 
+  const health = await request("/api/health");
+  assert(
+    health.response.status === 200 || health.response.status === 503,
+    `Healthcheck retornou status inesperado: ${health.response.status}.`
+  );
   await expectOk("/login", "", "Login page");
   await expectOk("/loja/doce-maria", "", "Portal publico");
 

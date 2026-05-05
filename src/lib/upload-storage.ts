@@ -9,8 +9,28 @@ const allowedImageTypes = new Map([
   ["image/webp", "webp"]
 ]);
 
-function getStorageDriver() {
+export function getStorageDriver() {
   return process.env.UPLOAD_STORAGE_DRIVER?.trim().toLowerCase() || "local";
+}
+
+export function getStorageHealth() {
+  const driver = getStorageDriver();
+
+  if (driver === "supabase") {
+    return {
+      driver,
+      configured: Boolean(
+        process.env.SUPABASE_URL &&
+          process.env.SUPABASE_SERVICE_ROLE_KEY &&
+          process.env.SUPABASE_STORAGE_BUCKET
+      )
+    };
+  }
+
+  return {
+    driver: "local",
+    configured: true
+  };
 }
 
 async function validateImage(file: File) {

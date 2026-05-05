@@ -57,6 +57,11 @@ Depois de publicar, rode o smoke test apontando para a URL final:
 SMOKE_BASE_URL=https://seu-dominio.com npm run smoke
 ```
 
+O endpoint `/api/health` retorna:
+
+- `200` quando banco e storage estao prontos.
+- `503` quando o app sobe, mas ainda falta banco real ou storage persistente.
+
 ## Uploads
 
 O upload usa `UPLOAD_STORAGE_DRIVER`.

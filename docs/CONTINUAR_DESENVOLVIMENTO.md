@@ -62,6 +62,9 @@ Com o servidor local rodando, valide o fluxo principal:
 npm run smoke
 ```
 
+Para readiness de deploy, abra `/api/health`. Em desenvolvimento mock ele pode
+retornar `503` porque o banco real ainda nao esta conectado; isso e esperado.
+
 Para testar outra URL:
 
 ```bash
