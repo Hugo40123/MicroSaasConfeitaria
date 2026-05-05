@@ -161,7 +161,7 @@ export function PublicStorefront({
           ? result.error.issues.join(" ")
           : result.error?.message;
 
-        setFormError(issues || "Nao foi possivel enviar o pedido.");
+        setFormError(issues || "Não foi possível enviar o pedido.");
         return;
       }
 
@@ -172,7 +172,7 @@ export function PublicStorefront({
       setCart({});
       setStep("menu");
     } catch {
-      setFormError("Nao foi possivel conectar com o servidor. Tente novamente.");
+      setFormError("Não foi possível conectar com o servidor. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -221,7 +221,7 @@ export function PublicStorefront({
           <h1>Seu pedido foi recebido!</h1>
           <p>
             Seu pedido foi enviado para nosso atendimento. Faremos contato direto
-            com voce.
+            com você.
           </p>
           <p>
             ID do pedido: <strong>{createdOrder.code}</strong>
@@ -275,11 +275,11 @@ export function PublicStorefront({
                 <div className="store-hero-meta">
                   <span>
                     <MapPin aria-hidden="true" />
-                    {store.address || "Retirada e entrega sob combinacao"}
+                    {store.address || "Retirada e entrega sob combinação"}
                   </span>
                   <span>
                     <Clock3 aria-hidden="true" />
-                    {source === "database" ? "Cardapio atualizado" : "Dados de exemplo"}
+                    {source === "database" ? "Cardápio atualizado" : "Dados de exemplo"}
                   </span>
                 </div>
               </div>
@@ -332,7 +332,7 @@ export function PublicStorefront({
                 <p className="eyebrow">Cardapio</p>
                 <h2>Escolha seus produtos</h2>
                 <p className="muted">
-                  Onde voce encontra todos os produtos, ordenados ou filtrados.
+                  Onde você encontra todos os produtos, ordenados ou filtrados.
                 </p>
               </div>
               <span className="store-count">{visibleProducts.length} produtos</span>
@@ -397,7 +397,7 @@ export function PublicStorefront({
       {step === "product" && selectedProduct ? (
         <section className="store-step">
           <button className="store-back" onClick={() => setStep("menu")} type="button">
-            Voltar ao cardapio
+            Voltar ao cardápio
           </button>
           <article className="product-detail">
             {renderProductMedia(selectedProduct, "product-detail-image")}
@@ -433,7 +433,7 @@ export function PublicStorefront({
             <div className="empty-state">
               <p className="muted">Seu carrinho ainda esta vazio.</p>
               <button className="btn btn-primary" onClick={() => setStep("menu")} type="button">
-                Ver cardapio
+                Ver cardápio
               </button>
             </div>
           ) : (
@@ -549,7 +549,7 @@ export function PublicStorefront({
 
               {fulfillment === "Entrega" ? (
                 <div className="field">
-                  <label htmlFor="address">Endereco</label>
+                  <label htmlFor="address">Endereço</label>
                   <input
                     className="input"
                     id="address"
