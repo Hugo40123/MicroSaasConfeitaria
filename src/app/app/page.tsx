@@ -1,6 +1,7 @@
 import { MetricCard } from "@/components/metric-card";
 import { StatusBadge } from "@/components/status-badge";
-import { formatCurrency, orders, productionAgenda } from "@/lib/sample-data";
+import { listOrdersForCurrentStore } from "@/lib/order-persistence";
+import { formatCurrency, productionAgenda } from "@/lib/sample-data";
 import {
   CalendarClock,
   ClipboardPlus,
@@ -12,7 +13,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const ordersResult = await listOrdersForCurrentStore();
+  const orders = ordersResult.data;
   const todayOrders = orders.filter((order) => order.deliveryDate === "Hoje");
   const pendingConfirmation = orders.filter(
     (order) => order.status === "aguardando_confirmacao"
@@ -25,10 +28,14 @@ export default function DashboardPage() {
       <header className="page-head">
         <div>
           <p className="eyebrow">Resumo do dia</p>
-          <h1>Pedidos, produção e caixa em uma tela só.</h1>
+          <h1>Pedidos, producao e caixa em uma tela so.</h1>
           <p className="lead">
-            A loja vê o que precisa confirmar, produzir e entregar sem depender de
+            A loja ve o que precisa confirmar, produzir e entregar sem depender de
             caderno ou conversa perdida no WhatsApp.
+          </p>
+          <p className="muted" style={{ marginTop: "0.75rem" }}>
+            Fonte dos pedidos:{" "}
+            {ordersResult.source === "database" ? "PostgreSQL" : "dados de exemplo"}
           </p>
         </div>
         <div className="actions">
@@ -57,7 +64,7 @@ export default function DashboardPage() {
           icon={Clock3}
         />
         <MetricCard
-          label="Em produção"
+          label="Em producao"
           value={String(production.length)}
           detail="Acompanhe a agenda"
           icon={PackageCheck}
@@ -73,7 +80,7 @@ export default function DashboardPage() {
       <section className="split" style={{ marginTop: "1rem" }}>
         <div className="panel">
           <div className="section-head">
-            <h2>Pedidos que pedem atenção</h2>
+            <h2>Pedidos que pedem atencao</h2>
             <Link href="/app/pedidos" className="icon-btn" title="Abrir pedidos">
               <Plus aria-hidden="true" />
             </Link>
@@ -84,10 +91,10 @@ export default function DashboardPage() {
                 <div className="item-main">
                   <div>
                     <p className="item-title">
-                      {order.code} · {order.customer}
+                      {order.code} - {order.customer}
                     </p>
                     <p className="item-subtitle">
-                      {order.items.join(", ")} · {order.deliveryDate} às{" "}
+                      {order.items.join(", ")} - {order.deliveryDate} as{" "}
                       {order.deliveryTime}
                     </p>
                   </div>
@@ -105,7 +112,7 @@ export default function DashboardPage() {
 
         <div className="panel">
           <div className="section-head">
-            <h2>Agenda de produção</h2>
+            <h2>Agenda de producao</h2>
             <Link href="/app/agenda" className="btn btn-secondary">
               Abrir agenda
             </Link>
@@ -125,7 +132,7 @@ export default function DashboardPage() {
                 <span className="dot" aria-hidden="true" />
                 <div>
                   <p className="item-title">
-                    {item.time} · {item.title}
+                    {item.time} - {item.title}
                   </p>
                   <p className="item-subtitle">{item.customer}</p>
                 </div>

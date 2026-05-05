@@ -1,6 +1,7 @@
 import { StatusBadge } from "@/components/status-badge";
-import { orders, store } from "@/lib/sample-data";
-import { CheckCircle2, Clock3, PackageCheck, Send, Store } from "lucide-react";
+import { getOrderByCodeForCurrentStore } from "@/lib/order-persistence";
+import { store } from "@/lib/sample-data";
+import { PackageCheck, Send, Store } from "lucide-react";
 import Link from "next/link";
 
 export default async function TrackingPage({
@@ -9,16 +10,8 @@ export default async function TrackingPage({
   params: Promise<{ codigo: string }>;
 }) {
   const { codigo } = await params;
-  const order =
-    orders.find((item) => item.code === codigo) ?? {
-      ...orders[0],
-      code: codigo,
-      customer: "Cliente",
-      items: ["Pedido enviado pelo portal"],
-      status: "aguardando_confirmacao" as const,
-      total: 0,
-      paidSignal: 0
-    };
+  const orderResult = await getOrderByCodeForCurrentStore(codigo);
+  const order = orderResult.data;
 
   return (
     <main className="storefront">
@@ -28,7 +21,7 @@ export default async function TrackingPage({
             <p className="eyebrow">Acompanhamento</p>
             <h1>Pedido {order.code}</h1>
             <p>
-              {order.customer} · {order.items.join(", ")} · {order.deliveryDate} às{" "}
+              {order.customer} - {order.items.join(", ")} - {order.deliveryDate} as{" "}
               {order.deliveryTime}
             </p>
           </div>
@@ -40,28 +33,32 @@ export default async function TrackingPage({
               <h2>Status atual</h2>
               <StatusBadge status={order.status} />
             </div>
+            <p className="muted" style={{ marginBottom: "1rem" }}>
+              Fonte do pedido:{" "}
+              {orderResult.source === "database" ? "PostgreSQL" : "dados de exemplo"}
+            </p>
             <div className="timeline">
               <div className="timeline-step done">
                 <span className="dot" aria-hidden="true" />
                 <div>
                   <p className="item-title">Pedido enviado</p>
-                  <p className="item-subtitle">A loja recebeu sua solicitação.</p>
+                  <p className="item-subtitle">A loja recebeu sua solicitacao.</p>
                 </div>
               </div>
               <div className="timeline-step current">
                 <span className="dot" aria-hidden="true" />
                 <div>
-                  <p className="item-title">Aguardando confirmação</p>
+                  <p className="item-title">Aguardando confirmacao</p>
                   <p className="item-subtitle">
-                    A equipe revisa agenda, valor e sinal antes da produção.
+                    A equipe revisa agenda, valor e sinal antes da producao.
                   </p>
                 </div>
               </div>
               <div className="timeline-step">
                 <span className="dot" aria-hidden="true" />
                 <div>
-                  <p className="item-title">Em produção</p>
-                  <p className="item-subtitle">Seu pedido está sendo preparado.</p>
+                  <p className="item-title">Em producao</p>
+                  <p className="item-subtitle">Seu pedido esta sendo preparado.</p>
                 </div>
               </div>
               <div className="timeline-step">

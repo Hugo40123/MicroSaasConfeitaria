@@ -1,17 +1,25 @@
 import { StatusBadge } from "@/components/status-badge";
-import { formatCurrency, orders } from "@/lib/sample-data";
+import { listOrdersForCurrentStore } from "@/lib/order-persistence";
+import { formatCurrency } from "@/lib/sample-data";
 import { CheckCircle2, Filter, Plus, Search, Send } from "lucide-react";
 
-export default function OrdersPage() {
+export default async function OrdersPage() {
+  const ordersResult = await listOrdersForCurrentStore();
+  const orders = ordersResult.data;
+
   return (
     <>
       <header className="page-head">
         <div>
-          <p className="eyebrow">Gestão de pedidos</p>
+          <p className="eyebrow">Gestao de pedidos</p>
           <h1>Confirme pedidos do portal e acompanhe cada entrega.</h1>
           <p className="lead">
-            O pedido enviado pelo cliente entra como aguardando confirmação para a
+            O pedido enviado pelo cliente entra como aguardando confirmacao para a
             loja revisar prazo, valor, sinal e disponibilidade.
+          </p>
+          <p className="muted" style={{ marginTop: "0.75rem" }}>
+            Fonte dos pedidos:{" "}
+            {ordersResult.source === "database" ? "PostgreSQL" : "dados de exemplo"}
           </p>
         </div>
         <div className="actions">
@@ -25,7 +33,7 @@ export default function OrdersPage() {
       <section className="panel">
         <div className="search-row">
           <label className="field">
-            <span>Busca rápida</span>
+            <span>Busca rapida</span>
             <span style={{ position: "relative" }}>
               <Search
                 aria-hidden="true"
@@ -40,7 +48,7 @@ export default function OrdersPage() {
               />
               <input
                 className="input"
-                placeholder="Cliente, telefone ou código"
+                placeholder="Cliente, telefone ou codigo"
                 style={{ paddingLeft: "2.25rem" }}
               />
             </span>
@@ -49,8 +57,8 @@ export default function OrdersPage() {
             <span>Status</span>
             <select className="select" defaultValue="">
               <option value="">Todos</option>
-              <option>Aguardando confirmação</option>
-              <option>Em produção</option>
+              <option>Aguardando confirmacao</option>
+              <option>Em producao</option>
               <option>Pronto</option>
             </select>
           </label>
@@ -69,7 +77,7 @@ export default function OrdersPage() {
                 <th>Entrega</th>
                 <th>Status</th>
                 <th>Total</th>
-                <th>Ações</th>
+                <th>Acoes</th>
               </tr>
             </thead>
             <tbody>
@@ -85,7 +93,7 @@ export default function OrdersPage() {
                   </td>
                   <td>
                     <strong>
-                      {order.deliveryDate} · {order.deliveryTime}
+                      {order.deliveryDate} - {order.deliveryTime}
                     </strong>
                     <p className="muted">{order.items.join(", ")}</p>
                   </td>

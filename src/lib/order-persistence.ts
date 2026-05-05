@@ -74,6 +74,19 @@ function mapDbOrderToUiOrder(order: DbOrder): Order {
   };
 }
 
+function makePendingTrackingOrder(code: string): Order {
+  return {
+    ...orders[0],
+    id: code,
+    code,
+    customer: "Cliente",
+    items: ["Pedido enviado pelo portal"],
+    status: "aguardando_confirmacao",
+    total: 0,
+    paidSignal: 0
+  };
+}
+
 async function getOrdersFromDatabase() {
   const prisma = getPrismaClient();
   const store = await prisma.store.findUnique({
@@ -117,6 +130,33 @@ export async function listOrdersForCurrentStore(): Promise<{
   return {
     data: dbOrders.map(mapDbOrderToUiOrder),
     source: "database"
+  };
+}
+
+export async function getOrderByCodeForCurrentStore(code: string): Promise<{
+  data: Order;
+  source: "database" | "mock";
+}> {
+  if (!isDatabaseConfigured()) {
+    return {
+      data: orders.find((order) => order.code === code) ?? makePendingTrackingOrder(code),
+      source: "mock"
+    };
+  }
+
+  const prisma = getPrismaClient();
+  const order = await prisma.order.findUnique({
+    where: {
+      publicTrackingCode: code
+    },
+    include: {
+      items: true
+    }
+  });
+
+  return {
+    data: order ? mapDbOrderToUiOrder(order) : makePendingTrackingOrder(code),
+    source: order ? "database" : "mock"
   };
 }
 
