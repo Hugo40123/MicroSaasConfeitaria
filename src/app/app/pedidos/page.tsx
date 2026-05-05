@@ -1,12 +1,13 @@
 import { StatusBadge } from "@/components/status-badge";
 import { requireAuthUser } from "@/lib/current-user";
-import { updateOrderStatusAction } from "@/lib/order-actions";
+import { createInternalOrderAction, updateOrderStatusAction } from "@/lib/order-actions";
 import {
   listOrdersForCurrentStore,
   orderStatusOptions,
   uiToDatabaseStatusMap,
   type DatabaseOrderStatus
 } from "@/lib/order-persistence";
+import { listProductsForCurrentStore } from "@/lib/product-repository";
 import { formatCurrency, type OrderStatus } from "@/lib/sample-data";
 import { CheckCircle2, Filter, Plus, Save, Search, Send, XCircle } from "lucide-react";
 
@@ -31,8 +32,10 @@ const nextStatusCopy: Partial<Record<OrderStatus, string>> = {
 export default async function OrdersPage() {
   const user = await requireAuthUser();
   const ordersResult = await listOrdersForCurrentStore(user.storeId);
+  const productsResult = await listProductsForCurrentStore(user.storeId);
   const orders = ordersResult.data;
-  const isMock = ordersResult.source === "mock";
+  const products = productsResult.data.filter((product) => product.active);
+  const isMock = ordersResult.source === "mock" || productsResult.source === "mock";
 
   return (
     <>
@@ -56,14 +59,88 @@ export default async function OrdersPage() {
           ) : null}
         </div>
         <div className="actions">
-          <button className="btn btn-primary" type="button">
+          <a className="btn btn-primary" href="#pedido-interno">
             <Plus aria-hidden="true" />
             Pedido interno
-          </button>
+          </a>
         </div>
       </header>
 
       <section className="panel">
+        <details className="product-editor" id="pedido-interno">
+          <summary>
+            <span>
+              <strong>Novo pedido interno</strong>
+              <small>Registre pedidos recebidos pelo balcao, telefone ou WhatsApp.</small>
+            </span>
+            <Plus aria-hidden="true" />
+          </summary>
+          <form action={createInternalOrderAction} className="product-form">
+            <div className="form-grid">
+              <label className="field">
+                <span>Cliente</span>
+                <input className="input" disabled={isMock} name="customerName" required />
+              </label>
+              <label className="field">
+                <span>Telefone/WhatsApp</span>
+                <input className="input" disabled={isMock} name="customerPhone" required />
+              </label>
+              <label className="field">
+                <span>Produto</span>
+                <select className="select" disabled={isMock || !products.length} name="productId" required>
+                  <option value="">Selecione</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.name} - {formatCurrency(product.price)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="field">
+                <span>Quantidade</span>
+                <input
+                  className="input"
+                  defaultValue={1}
+                  disabled={isMock}
+                  min="1"
+                  name="quantity"
+                  required
+                  type="number"
+                />
+              </label>
+              <label className="field">
+                <span>Tipo</span>
+                <select className="select" defaultValue="PICKUP" disabled={isMock} name="fulfillmentType">
+                  <option value="PICKUP">Retirada</option>
+                  <option value="DELIVERY">Entrega</option>
+                </select>
+              </label>
+              <label className="field">
+                <span>Data</span>
+                <input className="input" disabled={isMock} name="deliveryDate" required type="date" />
+              </label>
+              <label className="field">
+                <span>Horario</span>
+                <input className="input" disabled={isMock} name="deliveryTime" type="time" />
+              </label>
+              <label className="field">
+                <span>Endereco</span>
+                <input className="input" disabled={isMock} name="deliveryAddress" />
+              </label>
+            </div>
+            <label className="field">
+              <span>Observacoes internas</span>
+              <textarea className="textarea" disabled={isMock} name="internalNotes" />
+            </label>
+            <div className="actions">
+              <button className="btn btn-primary" disabled={isMock || !products.length} type="submit">
+                <Plus aria-hidden="true" />
+                Criar pedido interno
+              </button>
+            </div>
+          </form>
+        </details>
+
         <div className="search-row">
           <label className="field">
             <span>Busca rapida</span>

@@ -61,7 +61,7 @@ Para detalhes de banco local, banco remoto e deploy de migrations, consulte `doc
 
 ## Proxima etapa
 
-Criar pedido interno pelo painel.
+Listar clientes reais do banco.
 
 ## Resumo leigo das funcoes atuais
 
@@ -79,6 +79,7 @@ Criar pedido interno pelo painel.
 - Usuarios `ATTENDANT` acessam operacao diaria: resumo, pedidos, agenda, clientes e portal.
 - Produtos aceitam upload local de imagem JPG, PNG ou WebP ate 2 MB, salva em `public/uploads/products`.
 - Configuracoes da loja salvam nome, slug publico, telefone, WhatsApp, endereco e regras de venda online no banco.
+- Pedidos internos podem ser criados pelo painel usando produtos ativos da loja.
 
 ## Acessos de desenvolvimento
 
