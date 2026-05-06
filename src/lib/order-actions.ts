@@ -11,6 +11,7 @@ import {
 } from "@/lib/order-persistence";
 import { getPrismaClient, isDatabaseConfigured } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 const allowedStatuses = new Set<DatabaseOrderStatus>(
   orderStatusOptions.map((status) => status.value)
@@ -69,155 +70,183 @@ function ensureDatabaseConfigured() {
   }
 }
 
-export async function updateOrderStatusAction(formData: FormData) {
-  ensureDatabaseConfigured();
-
-  const user = await requireAuthUser();
-  const orderId = getString(formData, "orderId");
-  const status = parseOrderStatus(formData);
-
-  if (!orderId) {
-    throw new Error("Pedido inválido.");
+function getActionErrorMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message;
   }
 
-  const prisma = getPrismaClient();
-  const order = await prisma.$transaction(async (tx) => {
-    const currentOrder = await tx.order.findFirst({
-      where: {
-        id: orderId,
-        storeId: user.storeId
-      },
-      select: {
-        id: true,
-        publicTrackingCode: true
-      }
-    });
+  return "Não foi possível salvar o pedido.";
+}
 
-    if (!currentOrder) {
-      throw new Error("Pedido não encontrado para esta loja.");
+function redirectWithOrderError(error: unknown): never {
+  redirect(`/app/pedidos?orderError=${encodeURIComponent(getActionErrorMessage(error))}`);
+}
+
+export async function updateOrderStatusAction(formData: FormData) {
+  const user = await requireAuthUser();
+  let orderPublicTrackingCode = "";
+
+  try {
+    ensureDatabaseConfigured();
+
+    const orderId = getString(formData, "orderId");
+    const status = parseOrderStatus(formData);
+
+    if (!orderId) {
+      throw new Error("Pedido inválido.");
     }
 
-    await tx.order.update({
-      where: {
-        id: currentOrder.id
-      },
-      data: {
-        status
+    const prisma = getPrismaClient();
+    const order = await prisma.$transaction(async (tx) => {
+      const currentOrder = await tx.order.findFirst({
+        where: {
+          id: orderId,
+          storeId: user.storeId
+        },
+        select: {
+          id: true,
+          publicTrackingCode: true
+        }
+      });
+
+      if (!currentOrder) {
+        throw new Error("Pedido não encontrado para esta loja.");
       }
+
+      await tx.order.update({
+        where: {
+          id: currentOrder.id
+        },
+        data: {
+          status
+        }
+      });
+
+      if (stockDeductionStatuses.has(status)) {
+        await deductInventoryForOrder(tx, user.storeId, currentOrder.id);
+      }
+
+      return currentOrder;
     });
-
-    if (stockDeductionStatuses.has(status)) {
-      await deductInventoryForOrder(tx, user.storeId, currentOrder.id);
-    }
-
-    return currentOrder;
-  });
+    orderPublicTrackingCode = order.publicTrackingCode;
+  } catch (error) {
+    redirectWithOrderError(error);
+  }
 
   revalidatePath("/app");
   revalidatePath("/app/pedidos");
   revalidatePath("/app/agenda");
-  revalidatePath(`/pedido/${order.publicTrackingCode}`);
+  revalidatePath(`/pedido/${orderPublicTrackingCode}`);
+  redirect("/app/pedidos?orderSuccess=Status%20atualizado%20com%20sucesso.");
 }
 
 export async function createInternalOrderAction(formData: FormData) {
-  ensureDatabaseConfigured();
-
   const user = await requireAuthUser();
-  const prisma = getPrismaClient();
-  const productId = parseRequiredString(formData, "productId", "Produto");
-  const customerName = parseRequiredString(formData, "customerName", "Cliente");
-  const customerPhone = parseRequiredString(formData, "customerPhone", "Telefone")
-    .replace(/\D/g, "");
-  const fulfillmentType =
-    getString(formData, "fulfillmentType") === "DELIVERY" ? "DELIVERY" : "PICKUP";
-  const deliveryDate = parseRequiredString(formData, "deliveryDate", "Data");
-  const deliveryTime = getString(formData, "deliveryTime") || null;
-  const deliveryAddress = getString(formData, "deliveryAddress") || null;
-  const internalNotes = getString(formData, "internalNotes") || null;
-  const paymentMethod = parsePaymentMethod(formData);
-  const quantity = parseQuantity(formData);
+  let orderPublicTrackingCode = "";
 
-  if (customerPhone.length < 10) {
-    throw new Error("Informe um telefone válido.");
-  }
+  try {
+    ensureDatabaseConfigured();
 
-  const data = await prisma.$transaction(async (tx) => {
-    const product = await tx.product.findFirst({
-      where: {
-        id: productId,
-        storeId: user.storeId,
-        active: true
-      }
-    });
+    const prisma = getPrismaClient();
+    const productId = parseRequiredString(formData, "productId", "Produto");
+    const customerName = parseRequiredString(formData, "customerName", "Cliente");
+    const customerPhone = parseRequiredString(formData, "customerPhone", "Telefone")
+      .replace(/\D/g, "");
+    const fulfillmentType =
+      getString(formData, "fulfillmentType") === "DELIVERY" ? "DELIVERY" : "PICKUP";
+    const deliveryDate = parseRequiredString(formData, "deliveryDate", "Data");
+    const deliveryTime = getString(formData, "deliveryTime") || null;
+    const deliveryAddress = getString(formData, "deliveryAddress") || null;
+    const internalNotes = getString(formData, "internalNotes") || null;
+    const paymentMethod = parsePaymentMethod(formData);
+    const quantity = parseQuantity(formData);
 
-    if (!product) {
-      throw new Error("Produto não encontrado para esta loja.");
+    if (customerPhone.length < 10) {
+      throw new Error("Informe um telefone válido.");
     }
 
-    const unitPrice = Number(product.basePrice);
-    const totalAmount = unitPrice * quantity;
-    const code = makeOrderCode();
-    const customer = await tx.customer.upsert({
-      where: {
-        storeId_phone: {
+    const data = await prisma.$transaction(async (tx) => {
+      const product = await tx.product.findFirst({
+        where: {
+          id: productId,
           storeId: user.storeId,
-          phone: customerPhone
+          active: true
         }
-      },
-      update: {
-        name: customerName,
-        whatsapp: customerPhone,
-        address: deliveryAddress
-      },
-      create: {
-        storeId: user.storeId,
-        name: customerName,
-        phone: customerPhone,
-        whatsapp: customerPhone,
-        address: deliveryAddress
-      }
-    });
+      });
 
-    const order = await tx.order.create({
-      data: {
-        storeId: user.storeId,
-        customerId: customer.id,
-        code,
-        source: "INTERNAL",
-        status: "CONFIRMED",
-        fulfillmentType,
-        deliveryDate: new Date(`${deliveryDate}T00:00:00`),
-        deliveryTime,
-        customerName,
-        customerPhone,
-        deliveryAddress,
-        paymentMethod,
-        internalNotes,
-        totalAmount,
-        publicTrackingCode: code,
-        items: {
-          create: {
-            productId: product.id,
-            productName: product.name,
-            quantity,
-            unitPrice,
-            totalPrice: totalAmount
+      if (!product) {
+        throw new Error("Produto não encontrado para esta loja.");
+      }
+
+      const unitPrice = Number(product.basePrice);
+      const totalAmount = unitPrice * quantity;
+      const code = makeOrderCode();
+      const customer = await tx.customer.upsert({
+        where: {
+          storeId_phone: {
+            storeId: user.storeId,
+            phone: customerPhone
           }
+        },
+        update: {
+          name: customerName,
+          whatsapp: customerPhone,
+          address: deliveryAddress
+        },
+        create: {
+          storeId: user.storeId,
+          name: customerName,
+          phone: customerPhone,
+          whatsapp: customerPhone,
+          address: deliveryAddress
         }
-      },
-      select: {
-        id: true,
-        publicTrackingCode: true
-      }
+      });
+
+      const order = await tx.order.create({
+        data: {
+          storeId: user.storeId,
+          customerId: customer.id,
+          code,
+          source: "INTERNAL",
+          status: "CONFIRMED",
+          fulfillmentType,
+          deliveryDate: new Date(`${deliveryDate}T00:00:00`),
+          deliveryTime,
+          customerName,
+          customerPhone,
+          deliveryAddress,
+          paymentMethod,
+          internalNotes,
+          totalAmount,
+          publicTrackingCode: code,
+          items: {
+            create: {
+              productId: product.id,
+              productName: product.name,
+              quantity,
+              unitPrice,
+              totalPrice: totalAmount
+            }
+          }
+        },
+        select: {
+          id: true,
+          publicTrackingCode: true
+        }
+      });
+
+      await deductInventoryForOrder(tx, user.storeId, order.id);
+
+      return order;
     });
-
-    await deductInventoryForOrder(tx, user.storeId, order.id);
-
-    return order;
-  });
+    orderPublicTrackingCode = data.publicTrackingCode;
+  } catch (error) {
+    redirectWithOrderError(error);
+  }
 
   revalidatePath("/app");
   revalidatePath("/app/pedidos");
   revalidatePath("/app/agenda");
-  revalidatePath(`/pedido/${data.publicTrackingCode}`);
+  revalidatePath(`/pedido/${orderPublicTrackingCode}`);
+  redirect("/app/pedidos?orderSuccess=Pedido%20interno%20criado%20com%20sucesso.");
 }

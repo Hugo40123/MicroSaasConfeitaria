@@ -30,8 +30,16 @@ const nextStatusCopy: Partial<Record<OrderStatus, string>> = {
   saiu_para_entrega: "Marcar como entregue"
 };
 
-export default async function OrdersPage() {
+export default async function OrdersPage({
+  searchParams
+}: {
+  searchParams?: Promise<{
+    orderError?: string;
+    orderSuccess?: string;
+  }>;
+}) {
   const user = await requireAuthUser();
+  const params = await searchParams;
   const ordersResult = await listOrdersForCurrentStore(user.storeId);
   const productsResult = await listProductsForCurrentStore(user.storeId);
   const orders = ordersResult.data;
@@ -56,6 +64,16 @@ export default async function OrdersPage() {
             <p className="form-error" style={{ marginTop: "0.9rem" }}>
               Gestão de status desabilitada enquanto o PostgreSQL real não estiver
               configurado.
+            </p>
+          ) : null}
+          {params?.orderError ? (
+            <p className="form-error" style={{ marginTop: "0.9rem" }}>
+              {params.orderError}
+            </p>
+          ) : null}
+          {params?.orderSuccess ? (
+            <p className="form-success" style={{ marginTop: "0.9rem" }}>
+              {params.orderSuccess}
             </p>
           ) : null}
         </div>
