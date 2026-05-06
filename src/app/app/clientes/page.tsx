@@ -1,11 +1,24 @@
 import { requireAuthUser } from "@/lib/current-user";
 import { updateCustomerAction } from "@/lib/customer-actions";
 import { listCustomersForCurrentStore } from "@/lib/customer-repository";
+import { formatCurrency } from "@/lib/sample-data";
 import { Edit3, MessageCircle, Search } from "lucide-react";
 
-export default async function CustomersPage() {
+export default async function CustomersPage({
+  searchParams
+}: {
+  searchParams?: Promise<{
+    customerError?: string;
+    customerSuccess?: string;
+    query?: string;
+  }>;
+}) {
   const user = await requireAuthUser();
-  const customersResult = await listCustomersForCurrentStore(user.storeId);
+  const params = await searchParams;
+  const selectedQuery = params?.query?.trim() ?? "";
+  const customersResult = await listCustomersForCurrentStore(user.storeId, {
+    query: selectedQuery || undefined
+  });
   const customers = customersResult.data;
   const isMock = customersResult.source === "mock";
 
@@ -28,11 +41,21 @@ export default async function CustomersPage() {
               configurado.
             </p>
           ) : null}
+          {params?.customerError ? (
+            <p className="form-error" style={{ marginTop: "0.9rem" }}>
+              {params.customerError}
+            </p>
+          ) : null}
+          {params?.customerSuccess ? (
+            <p className="form-success" style={{ marginTop: "0.9rem" }}>
+              {params.customerSuccess}
+            </p>
+          ) : null}
         </div>
       </header>
 
       <section className="panel">
-        <div className="search-row">
+        <form action="/app/clientes" className="search-row">
           <label className="field">
             <span>Busca rápida</span>
             <span style={{ position: "relative" }}>
@@ -49,12 +72,18 @@ export default async function CustomersPage() {
               />
               <input
                 className="input"
+                defaultValue={selectedQuery}
+                name="query"
                 placeholder="Nome ou telefone"
                 style={{ paddingLeft: "2.25rem" }}
               />
             </span>
           </label>
-        </div>
+          <button className="btn btn-secondary" type="submit">
+            <Search aria-hidden="true" />
+            Buscar
+          </button>
+        </form>
 
         <div className="table-wrap">
           <table>
@@ -70,14 +99,17 @@ export default async function CustomersPage() {
             <tbody>
               {customers.map((customer) => (
                 <tr key={customer.id}>
-                  <td>
+                  <td data-label="Cliente">
                     <strong>{customer.name}</strong>
                     <p className="muted">{customer.notes || "Sem notas"}</p>
                   </td>
-                  <td>{customer.phone}</td>
-                  <td>{customer.address || "Não informado"}</td>
-                  <td>{customer.orderCount}</td>
-                  <td>
+                  <td data-label="Telefone">{customer.phone}</td>
+                  <td data-label="Endereço">{customer.address || "Não informado"}</td>
+                  <td data-label="Pedidos">
+                    <strong>{customer.orderCount}</strong>
+                    <p className="muted">Último: {customer.lastOrderCode}</p>
+                  </td>
+                  <td data-label="WhatsApp">
                     <a
                       className="icon-btn"
                       href={`https://wa.me/55${customer.whatsapp.replace(/\D/g, "")}`}
@@ -95,14 +127,14 @@ export default async function CustomersPage() {
         <div className="product-edit-list">
           {customers.map((customer) => (
             <details className="product-editor" key={`customer-${customer.id}`}>
-              <summary>
-                <span>
-                  <strong>Editar {customer.name}</strong>
-                  <small>
-                    {customer.orderCount} pedidos - ultimo: {customer.lastOrderCode}
-                  </small>
-                </span>
-                <Edit3 aria-hidden="true" />
+                  <summary>
+                    <span>
+                      <strong>Editar {customer.name}</strong>
+                      <small>
+                        {customer.orderCount} pedidos - último: {customer.lastOrderCode}
+                      </small>
+                    </span>
+                    <Edit3 aria-hidden="true" />
               </summary>
               <form action={updateCustomerAction} className="product-form">
                 <input name="customerId" type="hidden" value={customer.id} />
@@ -115,12 +147,22 @@ export default async function CustomersPage() {
                       disabled={isMock}
                       name="name"
                       required
-                    />
-                  </label>
-                  <label className="field">
-                    <span>WhatsApp</span>
-                    <input
-                      className="input"
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Telefone</span>
+                      <input
+                        className="input"
+                        defaultValue={customer.phone}
+                        disabled={isMock}
+                        name="phone"
+                        required
+                      />
+                    </label>
+                    <label className="field">
+                      <span>WhatsApp</span>
+                      <input
+                        className="input"
                       defaultValue={customer.whatsapp}
                       disabled={isMock}
                       name="whatsapp"
@@ -151,6 +193,33 @@ export default async function CustomersPage() {
                   </button>
                 </div>
               </form>
+              <div className="list">
+                <div className="section-head">
+                  <h3>Histórico de pedidos</h3>
+                  <span className="badge neutral">{customer.orderCount} pedidos</span>
+                </div>
+                {customer.orders.map((order) => (
+                  <article className="item-card" key={order.id}>
+                    <div className="item-main">
+                      <div>
+                        <p className="item-title">
+                          {order.code} - {order.date}
+                        </p>
+                        <p className="item-subtitle">{order.items || "Sem itens"}</p>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <span className="badge neutral">{order.status}</span>
+                        <p className="muted" style={{ marginTop: "0.35rem" }}>
+                          {formatCurrency(order.total)}
+                        </p>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+                {customer.orders.length === 0 ? (
+                  <p className="muted">Nenhum pedido encontrado para este cliente.</p>
+                ) : null}
+              </div>
             </details>
           ))}
         </div>
