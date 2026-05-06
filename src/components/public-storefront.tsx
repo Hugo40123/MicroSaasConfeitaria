@@ -32,8 +32,25 @@ type CreatedOrder = {
 type StorefrontStep = "menu" | "product" | "cart" | "checkout";
 type PaymentMethod = "Dinheiro" | "PIX" | "Cartão";
 
-const categories = ["Todos", "Bolos inteiros", "Fatias", "Doces", "Extras"] as const;
 const deliveryFeeAmount = 5;
+
+function getStoreThemeVars(store: StoreProfile) {
+  return {
+    "--store-primary": store.themePrimary,
+    "--store-primary-strong": store.themePrimaryStrong,
+    "--store-accent": store.themeAccent,
+    "--store-bg": store.themeBackground,
+    "--store-soft": store.themeSoft
+  } as CSSProperties;
+}
+
+function formatDateInput(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
 
 export function PublicStorefront({
   products,
@@ -44,8 +61,7 @@ export function PublicStorefront({
   store: StoreProfile;
   source: "database" | "mock";
 }) {
-  const [activeCategory, setActiveCategory] =
-    useState<(typeof categories)[number]>("Todos");
+  const [activeCategory, setActiveCategory] = useState("Todos");
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [query, setQuery] = useState("");
   const [step, setStep] = useState<StorefrontStep>("menu");
@@ -55,6 +71,15 @@ export function PublicStorefront({
   const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const themeVars = getStoreThemeVars(store);
+  const todayDate = useMemo(() => formatDateInput(new Date()), []);
+  const availableCategories = useMemo(() => {
+    const onlineCategories = products
+      .filter((product) => product.online && product.active)
+      .map((product) => product.category);
+
+    return ["Todos", ...Array.from(new Set(onlineCategories))];
+  }, [products]);
 
   const visibleProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -73,6 +98,19 @@ export function PublicStorefront({
       return matchesCategory && matchesQuery;
     });
   }, [activeCategory, products, query]);
+  const productGroups = useMemo(() => {
+    const categoriesToRender =
+      activeCategory === "Todos"
+        ? availableCategories.filter((category) => category !== "Todos")
+        : [activeCategory];
+
+    return categoriesToRender
+      .map((category) => ({
+        category,
+        products: visibleProducts.filter((product) => product.category === category)
+      }))
+      .filter((group) => group.products.length > 0);
+  }, [activeCategory, availableCategories, visibleProducts]);
 
   const cartItems = Object.values(cart);
   const total = cartItems.reduce(
@@ -211,7 +249,7 @@ export function PublicStorefront({
     );
 
     return (
-      <main className="storefront storefront-confirmation">
+      <main className="storefront storefront-confirmation" style={themeVars}>
         <header className="store-topbar">
           <span className="store-mini-brand">
             <span className="store-mini-mark">{store.name.slice(0, 1)}</span>
@@ -248,18 +286,7 @@ export function PublicStorefront({
   }
 
   return (
-    <main
-      className="storefront"
-      style={
-        {
-          "--store-primary": "#d79771",
-          "--store-primary-strong": "#734939",
-          "--store-accent": "#f7b239",
-          "--store-bg": "#fff6e8",
-          "--store-soft": "#fff0da"
-        } as CSSProperties
-      }
-    >
+    <main className="storefront" style={themeVars}>
       <header className="store-topbar">
         <button className="store-mini-brand" onClick={() => setStep("menu")} type="button">
           <span className="store-mini-mark">{store.name.slice(0, 1)}</span>
@@ -276,7 +303,7 @@ export function PublicStorefront({
           <section className="store-hero">
             <div className="store-banner">
               <div className="store-banner-inner">
-                <p className="eyebrow">Cardapio online</p>
+                <p className="eyebrow">Cardápio online</p>
                 <h1>{store.name}</h1>
                 <p>{store.description}</p>
                 <div className="store-hero-meta">
@@ -336,7 +363,7 @@ export function PublicStorefront({
           <section className="store-section" id="cardapio">
             <div className="store-section-head">
               <div>
-                <p className="eyebrow">Cardapio</p>
+                <p className="eyebrow">Cardápio</p>
                 <h2>Escolha seus produtos</h2>
                 <p className="muted">
                   Onde você encontra todos os produtos, ordenados ou filtrados.
@@ -356,7 +383,7 @@ export function PublicStorefront({
             </label>
 
             <div className="store-toolbar" aria-label="Categorias">
-              {categories.map((category) => (
+              {availableCategories.map((category) => (
                 <button
                   className={`chip ${activeCategory === category ? "active" : ""}`}
                   key={category}
@@ -368,35 +395,47 @@ export function PublicStorefront({
               ))}
             </div>
 
-            <div className="product-grid">
-              {visibleProducts.map((product) => (
-                <article className="product-card" key={product.id}>
-                  <button
-                    className="product-card-link"
-                    onClick={() => openProduct(product)}
-                    type="button"
-                  >
-                    {renderProductMedia(product, "product-image")}
-                    <span className="product-body">
-                      <span className="product-category">{product.category}</span>
-                      <strong>{product.name}</strong>
-                      <span className="muted">{product.description}</span>
-                    </span>
-                  </button>
-                  <div className="product-card-footer">
-                    <span className="price">{formatCurrency(product.price)}</span>
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => addProduct(product)}
-                      type="button"
-                    >
-                      <Plus aria-hidden="true" />
-                      Adicionar
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
+            {productGroups.map((group) => (
+              <div className="store-category-group" key={group.category}>
+                {activeCategory === "Todos" ? <h3>{group.category}</h3> : null}
+                <div className="product-grid">
+                  {group.products.map((product) => (
+                    <article className="product-card" key={product.id}>
+                      <button
+                        className="product-card-link"
+                        onClick={() => openProduct(product)}
+                        type="button"
+                      >
+                        {renderProductMedia(product, "product-image")}
+                        <span className="product-body">
+                          <span className="product-category">{product.category}</span>
+                          <strong>{product.name}</strong>
+                          <span className="muted">{product.description}</span>
+                        </span>
+                      </button>
+                      <div className="product-card-footer">
+                        <span className="price">{formatCurrency(product.price)}</span>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => addProduct(product)}
+                          type="button"
+                        >
+                          <Plus aria-hidden="true" />
+                          Adicionar
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {visibleProducts.length === 0 ? (
+              <div className="empty-state">
+                <p className="muted">
+                  Nenhum produto encontrado neste filtro. Tente outra categoria ou busca.
+                </p>
+              </div>
+            ) : null}
           </section>
         </>
       ) : null}
@@ -586,6 +625,7 @@ export function PublicStorefront({
                     <input
                       className="input"
                       id="delivery-date"
+                      min={todayDate}
                       name="deliveryDate"
                       required
                       style={{ paddingLeft: "2.25rem" }}
@@ -683,7 +723,7 @@ export function PublicStorefront({
 
       <footer className="store-footer">
         <div className="store-socials" aria-label="Contatos">
-          <a href={makeStoreWhatsAppHref(store.phone, `Ola! Quero fazer um pedido na ${store.name}.`)}>
+          <a href={makeStoreWhatsAppHref(store.phone, `Olá! Quero fazer um pedido na ${store.name}.`)}>
             <MessageCircle aria-hidden="true" />
             <span className="sr-only">WhatsApp</span>
           </a>

@@ -12,7 +12,8 @@ export type ProductCategory =
   | "Bolos inteiros"
   | "Fatias"
   | "Doces"
-  | "Extras";
+  | "Extras"
+  | "Personalizados";
 
 export type Product = {
   id: string;

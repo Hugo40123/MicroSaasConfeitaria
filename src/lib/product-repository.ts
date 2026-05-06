@@ -47,7 +47,7 @@ export const productCategoryOptions = [
   { value: "CUSTOM", label: "Personalizados" }
 ] as const satisfies ReadonlyArray<{
   value: ProductCategoryValue;
-  label: ProductCategory | "Personalizados";
+  label: ProductCategory;
 }>;
 
 const categoryMap = {
@@ -56,7 +56,7 @@ const categoryMap = {
   SWEET: "Doces",
   EXTRA: "Extras",
   CUSTOM: "Personalizados"
-} as const satisfies Record<string, ProductCategory | "Personalizados">;
+} as const satisfies Record<string, ProductCategory>;
 
 const fallbackArt = {
   "Bolos inteiros": {
@@ -98,7 +98,7 @@ function mapDbProductToUiProduct(product: DbProduct): Product {
   return {
     id: product.id,
     name: product.name,
-    category: category === "Personalizados" ? "Extras" : category,
+    category,
     description: product.description ?? "",
     price: Number(product.basePrice),
     preparationTime: toPreparationText(product.preparationHours),
