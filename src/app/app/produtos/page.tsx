@@ -34,7 +34,8 @@ import {
   Plus,
   Save,
   Search,
-  Trash2
+  Trash2,
+  XCircle
 } from "lucide-react";
 
 function ProductForm({
@@ -669,7 +670,7 @@ export default async function ProductsPage({
                 <th>Preparo</th>
                 <th>Portal</th>
                 <th>Status</th>
-                <th>Acoes</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -712,6 +713,13 @@ export default async function ProductsPage({
                   </td>
                   <td data-label="Ações">
                     <div className="row-actions">
+                      <a
+                        className="icon-btn"
+                        href={`#editar-produto-${product.id}`}
+                        title="Editar produto"
+                      >
+                        <Edit3 aria-hidden="true" />
+                      </a>
                       <form action={toggleProductOnlineAction}>
                         <input name="productId" type="hidden" value={product.id} />
                         <input
@@ -753,44 +761,57 @@ export default async function ProductsPage({
                         </button>
                       </form>
                     </div>
+                    <div className="modal-layer" id={`editar-produto-${product.id}`}>
+                      <a
+                        aria-label="Fechar edição"
+                        className="modal-backdrop"
+                        href="#"
+                      />
+                      <section
+                        aria-labelledby={`editar-produto-${product.id}-titulo`}
+                        className="modal-card modal-card-wide"
+                        role="dialog"
+                      >
+                        <div className="modal-head">
+                          <div>
+                            <p className="eyebrow">Editar produto</p>
+                            <h2 id={`editar-produto-${product.id}-titulo`}>
+                              {product.name}
+                            </h2>
+                            <p className="muted">
+                              {formatCurrency(product.price)} - {product.category}
+                            </p>
+                          </div>
+                          <a className="icon-btn" href="#" title="Fechar">
+                            <XCircle aria-hidden="true" />
+                          </a>
+                        </div>
+                        {product.imageUrl ? (
+                          <img
+                            alt=""
+                            className="product-preview"
+                            src={product.imageUrl}
+                          />
+                        ) : (
+                          <div className="image-placeholder">
+                            <ImageUp aria-hidden="true" />
+                            <span>Sem imagem cadastrada</span>
+                          </div>
+                        )}
+                        <ProductForm
+                          action={updateProductAction}
+                          disabled={isMock}
+                          product={product}
+                          submitLabel="Salvar alterações"
+                        />
+                        <RecipeEditor disabled={isMock} ingredients={ingredients} product={product} />
+                      </section>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-
-        <div className="product-edit-list">
-          {products.map((product) => (
-            <details className="product-editor" key={`edit-${product.id}`}>
-              <summary>
-                <span>
-                  <strong>Editar {product.name}</strong>
-                  <small>{formatCurrency(product.price)} - {product.category}</small>
-                </span>
-                <Edit3 aria-hidden="true" />
-              </summary>
-              {product.imageUrl ? (
-                <img
-                  alt=""
-                  className="product-preview"
-                  src={product.imageUrl}
-                />
-              ) : (
-                <div className="image-placeholder">
-                  <ImageUp aria-hidden="true" />
-                  <span>Sem imagem cadastrada</span>
-                </div>
-              )}
-              <ProductForm
-                action={updateProductAction}
-                disabled={isMock}
-                product={product}
-                submitLabel="Salvar alterações"
-              />
-              <RecipeEditor disabled={isMock} ingredients={ingredients} product={product} />
-            </details>
-          ))}
         </div>
       </section>
     </>

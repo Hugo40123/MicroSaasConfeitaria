@@ -1465,6 +1465,10 @@ th {
   padding: 1rem;
 }
 
+.modal-card-wide {
+  width: min(64rem, 100%);
+}
+
 .modal-head {
   display: flex;
   align-items: flex-start;

@@ -2,7 +2,7 @@ import { requireAuthUser } from "@/lib/current-user";
 import { updateCustomerAction } from "@/lib/customer-actions";
 import { listCustomersForCurrentStore } from "@/lib/customer-repository";
 import { formatCurrency } from "@/lib/sample-data";
-import { Edit3, MessageCircle, Search } from "lucide-react";
+import { Edit3, MessageCircle, Save, Search, XCircle } from "lucide-react";
 
 export default async function CustomersPage({
   searchParams
@@ -94,6 +94,7 @@ export default async function CustomersPage({
                 <th>Endereço</th>
                 <th>Pedidos</th>
                 <th>WhatsApp</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -118,110 +119,131 @@ export default async function CustomersPage({
                       <MessageCircle aria-hidden="true" />
                     </a>
                   </td>
+                  <td data-label="Ações">
+                    <a
+                      className="icon-btn"
+                      href={`#editar-cliente-${customer.id}`}
+                      title="Editar cliente"
+                    >
+                    <Edit3 aria-hidden="true" />
+                    </a>
+                    <div className="modal-layer" id={`editar-cliente-${customer.id}`}>
+                      <a
+                        aria-label="Fechar edição"
+                        className="modal-backdrop"
+                        href="#"
+                      />
+                      <section
+                        aria-labelledby={`editar-cliente-${customer.id}-titulo`}
+                        className="modal-card"
+                        role="dialog"
+                      >
+                        <div className="modal-head">
+                          <div>
+                            <p className="eyebrow">Editar cliente</p>
+                            <h2 id={`editar-cliente-${customer.id}-titulo`}>
+                              {customer.name}
+                            </h2>
+                            <p className="muted">
+                              {customer.orderCount} pedidos - último: {customer.lastOrderCode}
+                            </p>
+                          </div>
+                          <a className="icon-btn" href="#" title="Fechar">
+                            <XCircle aria-hidden="true" />
+                          </a>
+                        </div>
+                        <form action={updateCustomerAction} className="product-form">
+                          <input name="customerId" type="hidden" value={customer.id} />
+                          <div className="form-grid">
+                            <label className="field">
+                              <span>Nome</span>
+                              <input
+                                className="input"
+                                defaultValue={customer.name}
+                                disabled={isMock}
+                                name="name"
+                                required
+                              />
+                            </label>
+                            <label className="field">
+                              <span>Telefone</span>
+                              <input
+                                className="input"
+                                defaultValue={customer.phone}
+                                disabled={isMock}
+                                name="phone"
+                                required
+                              />
+                            </label>
+                            <label className="field">
+                              <span>WhatsApp</span>
+                              <input
+                                className="input"
+                                defaultValue={customer.whatsapp}
+                                disabled={isMock}
+                                name="whatsapp"
+                              />
+                            </label>
+                            <label className="field">
+                              <span>Endereço</span>
+                              <input
+                                className="input"
+                                defaultValue={customer.address}
+                                disabled={isMock}
+                                name="address"
+                              />
+                            </label>
+                          </div>
+                          <label className="field">
+                            <span>Notas</span>
+                            <textarea
+                              className="textarea"
+                              defaultValue={customer.notes}
+                              disabled={isMock}
+                              name="notes"
+                            />
+                          </label>
+                          <div className="actions">
+                            <button className="btn btn-primary" disabled={isMock} type="submit">
+                              <Save aria-hidden="true" />
+                              Salvar cliente
+                            </button>
+                          </div>
+                        </form>
+                        <div className="list">
+                          <div className="section-head">
+                            <h3>Histórico de pedidos</h3>
+                            <span className="badge neutral">{customer.orderCount} pedidos</span>
+                          </div>
+                          {customer.orders.map((order) => (
+                            <article className="item-card" key={order.id}>
+                              <div className="item-main">
+                                <div>
+                                  <p className="item-title">
+                                    {order.code} - {order.date}
+                                  </p>
+                                  <p className="item-subtitle">{order.items || "Sem itens"}</p>
+                                </div>
+                                <div style={{ textAlign: "right" }}>
+                                  <span className="badge neutral">{order.status}</span>
+                                  <p className="muted" style={{ marginTop: "0.35rem" }}>
+                                    {formatCurrency(order.total)}
+                                  </p>
+                                </div>
+                              </div>
+                            </article>
+                          ))}
+                          {customer.orders.length === 0 ? (
+                            <p className="muted">Nenhum pedido encontrado para este cliente.</p>
+                          ) : null}
+                        </div>
+                      </section>
+                      </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-
-        <div className="product-edit-list">
-          {customers.map((customer) => (
-            <details className="product-editor" key={`customer-${customer.id}`}>
-                  <summary>
-                    <span>
-                      <strong>Editar {customer.name}</strong>
-                      <small>
-                        {customer.orderCount} pedidos - último: {customer.lastOrderCode}
-                      </small>
-                    </span>
-                    <Edit3 aria-hidden="true" />
-              </summary>
-              <form action={updateCustomerAction} className="product-form">
-                <input name="customerId" type="hidden" value={customer.id} />
-                <div className="form-grid">
-                  <label className="field">
-                    <span>Nome</span>
-                    <input
-                      className="input"
-                      defaultValue={customer.name}
-                      disabled={isMock}
-                      name="name"
-                      required
-                      />
-                    </label>
-                    <label className="field">
-                      <span>Telefone</span>
-                      <input
-                        className="input"
-                        defaultValue={customer.phone}
-                        disabled={isMock}
-                        name="phone"
-                        required
-                      />
-                    </label>
-                    <label className="field">
-                      <span>WhatsApp</span>
-                      <input
-                        className="input"
-                      defaultValue={customer.whatsapp}
-                      disabled={isMock}
-                      name="whatsapp"
-                    />
-                  </label>
-                  <label className="field">
-                    <span>Endereço</span>
-                    <input
-                      className="input"
-                      defaultValue={customer.address}
-                      disabled={isMock}
-                      name="address"
-                    />
-                  </label>
-                </div>
-                <label className="field">
-                  <span>Notas</span>
-                  <textarea
-                    className="textarea"
-                    defaultValue={customer.notes}
-                    disabled={isMock}
-                    name="notes"
-                  />
-                </label>
-                <div className="actions">
-                  <button className="btn btn-primary" disabled={isMock} type="submit">
-                    Salvar cliente
-                  </button>
-                </div>
-              </form>
-              <div className="list">
-                <div className="section-head">
-                  <h3>Histórico de pedidos</h3>
-                  <span className="badge neutral">{customer.orderCount} pedidos</span>
-                </div>
-                {customer.orders.map((order) => (
-                  <article className="item-card" key={order.id}>
-                    <div className="item-main">
-                      <div>
-                        <p className="item-title">
-                          {order.code} - {order.date}
-                        </p>
-                        <p className="item-subtitle">{order.items || "Sem itens"}</p>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <span className="badge neutral">{order.status}</span>
-                        <p className="muted" style={{ marginTop: "0.35rem" }}>
-                          {formatCurrency(order.total)}
-                        </p>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-                {customer.orders.length === 0 ? (
-                  <p className="muted">Nenhum pedido encontrado para este cliente.</p>
-                ) : null}
-              </div>
-            </details>
-          ))}
         </div>
       </section>
     </>
