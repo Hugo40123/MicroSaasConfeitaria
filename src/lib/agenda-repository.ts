@@ -1,5 +1,11 @@
 import type { Prisma } from "@prisma/client";
 import { getPrismaClient, isDatabaseConfigured } from "@/lib/prisma";
+import {
+  type DatabaseOrderStatus,
+  addDaysToDateInput,
+  formatDateInput,
+  getTodayDateInput
+} from "@/lib/order-persistence";
 import { orders, productionAgenda, type OrderStatus } from "@/lib/sample-data";
 
 export type AgendaOrder = {
@@ -8,10 +14,16 @@ export type AgendaOrder = {
   customer: string;
   items: string;
   deliveryDate: string;
+  deliveryDateInput: string | null;
   deliveryTime: string;
   fulfillment: string;
   status: OrderStatus;
   urgent: boolean;
+};
+
+export type AgendaFilters = {
+  date?: string;
+  status?: DatabaseOrderStatus;
 };
 
 const statusMap = {
@@ -29,6 +41,15 @@ const fulfillmentMap = {
   PICKUP: "Retirada",
   DELIVERY: "Entrega"
 } as const;
+
+const activeProductionStatuses: DatabaseOrderStatus[] = [
+  "AWAITING_CONFIRMATION",
+  "CONFIRMED",
+  "PENDING",
+  "IN_PRODUCTION",
+  "READY",
+  "OUT_FOR_DELIVERY"
+];
 
 type DbAgendaOrder = Prisma.OrderGetPayload<{
   include: {
@@ -54,40 +75,79 @@ function formatDate(value: Date | null) {
   return new Intl.DateTimeFormat("pt-BR").format(date);
 }
 
-export async function listAgendaForCurrentStore(storeId: string): Promise<{
+function getDateRange(value: string | undefined) {
+  const dateInput = value || getTodayDateInput();
+  const start = new Date(`${dateInput}T00:00:00`);
+
+  if (Number.isNaN(start.getTime())) return null;
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 1);
+
+  return {
+    dateInput,
+    start,
+    end
+  };
+}
+
+function filterMockAgenda(filters: AgendaFilters | undefined) {
+  return orders
+    .filter((order) => {
+      if (filters?.status && order.status !== statusMap[filters.status]) {
+        return false;
+      }
+
+      return true;
+    })
+    .map((order) => ({
+      id: order.id,
+      code: order.code,
+      customer: order.customer,
+      items: order.items.join(", "),
+      deliveryDate: order.deliveryDate,
+      deliveryDateInput: null,
+      deliveryTime: order.deliveryTime,
+      fulfillment: order.fulfillment,
+      status: order.status,
+      urgent: Boolean(order.urgent)
+    }));
+}
+
+export async function listAgendaForCurrentStore(storeId: string, filters?: AgendaFilters): Promise<{
   data: AgendaOrder[];
   source: "database" | "mock";
 }> {
   if (!isDatabaseConfigured()) {
     return {
-      data: orders.map((order) => ({
-        id: order.id,
-        code: order.code,
-        customer: order.customer,
-        items: order.items.join(", "),
-        deliveryDate: order.deliveryDate,
-        deliveryTime: order.deliveryTime,
-        fulfillment: order.fulfillment,
-        status: order.status,
-        urgent: Boolean(order.urgent)
-      })),
+      data: filterMockAgenda(filters),
       source: "mock"
     };
   }
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const dateRange = getDateRange(filters?.date);
+  const where: Prisma.OrderWhereInput = {
+    storeId,
+    status: filters?.status
+      ? filters.status
+      : {
+          in: activeProductionStatuses
+        }
+  };
+
+  if (dateRange) {
+    where.deliveryDate = filters?.date
+      ? {
+          gte: dateRange.start,
+          lt: dateRange.end
+        }
+      : {
+          gte: dateRange.start
+        };
+  }
 
   const dbOrders: DbAgendaOrder[] = await getPrismaClient().order.findMany({
-    where: {
-      storeId,
-      deliveryDate: {
-        gte: today
-      },
-      status: {
-        notIn: ["DELIVERED", "CANCELLED"]
-      }
-    },
+    where,
     include: {
       items: true
     },
@@ -109,6 +169,7 @@ export async function listAgendaForCurrentStore(storeId: string): Promise<{
       customer: order.customerName,
       items: order.items.map((item) => item.productName).join(", "),
       deliveryDate: formatDate(order.deliveryDate),
+      deliveryDateInput: order.deliveryDate ? formatDateInput(order.deliveryDate) : null,
       deliveryTime: order.deliveryTime ?? "A combinar",
       fulfillment: fulfillmentMap[order.fulfillmentType],
       status: statusMap[order.status],
@@ -120,4 +181,19 @@ export async function listAgendaForCurrentStore(storeId: string): Promise<{
 
 export function getMockProductionTimeline() {
   return productionAgenda;
+}
+
+export function getAgendaDateNavigation(dateInput: string | undefined) {
+  const parsedDate = dateInput ? new Date(`${dateInput}T00:00:00`) : null;
+  const current =
+    dateInput && parsedDate && !Number.isNaN(parsedDate.getTime())
+      ? dateInput
+      : getTodayDateInput();
+
+  return {
+    current,
+    previous: addDaysToDateInput(current, -1),
+    next: addDaysToDateInput(current, 1),
+    today: getTodayDateInput()
+  };
 }

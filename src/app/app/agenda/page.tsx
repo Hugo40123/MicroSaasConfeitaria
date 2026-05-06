@@ -1,14 +1,51 @@
 import { StatusBadge } from "@/components/status-badge";
-import { listAgendaForCurrentStore } from "@/lib/agenda-repository";
+import {
+  getAgendaDateNavigation,
+  listAgendaForCurrentStore
+} from "@/lib/agenda-repository";
 import { requireAuthUser } from "@/lib/current-user";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  orderStatusOptions,
+  parseDatabaseOrderStatus
+} from "@/lib/order-persistence";
+import { CalendarDays, ChevronLeft, ChevronRight, Filter } from "lucide-react";
 
-export default async function AgendaPage() {
+function formatDateLabel(dateInput: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    weekday: "long"
+  }).format(new Date(`${dateInput}T00:00:00`));
+}
+
+export default async function AgendaPage({
+  searchParams
+}: {
+  searchParams?: Promise<{
+    date?: string;
+    status?: string;
+  }>;
+}) {
   const user = await requireAuthUser();
-  const agendaResult = await listAgendaForCurrentStore(user.storeId);
+  const params = await searchParams;
+  const selectedStatus = parseDatabaseOrderStatus(params?.status);
+  const navigation = getAgendaDateNavigation(params?.date);
+  const agendaResult = await listAgendaForCurrentStore(user.storeId, {
+    date: navigation.current,
+    status: selectedStatus ?? undefined
+  });
   const agenda = agendaResult.data;
-  const todayAgenda = agenda.filter((order) => order.deliveryDate === "Hoje");
-  const timeline = todayAgenda.length > 0 ? todayAgenda : agenda.slice(0, 4);
+  const timeline = agenda
+    .filter((order) => order.status !== "cancelado" && order.status !== "entregue")
+    .slice(0, 8);
+  const statusSummary = {
+    waiting: agenda.filter((order) => order.status === "aguardando_confirmacao").length,
+    confirmed: agenda.filter((order) => order.status === "confirmado").length,
+    production: agenda.filter((order) => order.status === "em_producao").length,
+    ready: agenda.filter((order) => order.status === "pronto").length
+  };
+  const statusQuery = selectedStatus ? `&status=${selectedStatus}` : "";
+  const selectedDateLabel = formatDateLabel(navigation.current);
 
   return (
     <>
@@ -26,24 +63,87 @@ export default async function AgendaPage() {
           </p>
         </div>
         <div className="actions">
-          <button className="icon-btn" title="Dia anterior" type="button">
+          <a
+            className="icon-btn"
+            href={`/app/agenda?date=${navigation.previous}${statusQuery}`}
+            title="Dia anterior"
+          >
             <ChevronLeft aria-hidden="true" />
-          </button>
-          <button className="btn btn-secondary" type="button">
+          </a>
+          <a
+            className="btn btn-secondary"
+            href={`/app/agenda?date=${navigation.today}${statusQuery}`}
+          >
             <CalendarDays aria-hidden="true" />
             Hoje
-          </button>
-          <button className="icon-btn" title="Próximo dia" type="button">
+          </a>
+          <a
+            className="icon-btn"
+            href={`/app/agenda?date=${navigation.next}${statusQuery}`}
+            title="Próximo dia"
+          >
             <ChevronRight aria-hidden="true" />
-          </button>
+          </a>
         </div>
       </header>
+
+      <section className="panel">
+        <form action="/app/agenda" className="search-row">
+          <label className="field">
+            <span>Data de produção</span>
+            <input
+              className="input"
+              defaultValue={navigation.current}
+              name="date"
+              type="date"
+            />
+          </label>
+          <label className="field">
+            <span>Status</span>
+            <select className="select" defaultValue={selectedStatus ?? ""} name="status">
+              <option value="">Ativos</option>
+              {orderStatusOptions.map((status) => (
+                <option key={status.value} value={status.value}>
+                  {status.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="btn btn-secondary" type="submit">
+            <Filter aria-hidden="true" />
+            Filtrar
+          </button>
+        </form>
+
+        <div className="pricing-grid">
+          <div>
+            <span className="muted">Data selecionada</span>
+            <strong>{selectedDateLabel}</strong>
+          </div>
+          <div>
+            <span className="muted">A confirmar</span>
+            <strong>{statusSummary.waiting}</strong>
+          </div>
+          <div>
+            <span className="muted">Confirmados</span>
+            <strong>{statusSummary.confirmed}</strong>
+          </div>
+          <div>
+            <span className="muted">Em produção</span>
+            <strong>{statusSummary.production}</strong>
+          </div>
+          <div>
+            <span className="muted">Prontos</span>
+            <strong>{statusSummary.ready}</strong>
+          </div>
+        </div>
+      </section>
 
       <section className="split">
         <div className="panel">
           <div className="section-head">
             <h2>Linha do tempo</h2>
-            <span className="badge neutral">{timeline.length} entregas</span>
+            <span className="badge neutral">{timeline.length} pedidos</span>
           </div>
           <div className="timeline">
             {timeline.map((order) => (
@@ -69,7 +169,7 @@ export default async function AgendaPage() {
               </div>
             ))}
             {timeline.length === 0 ? (
-              <p className="muted">Nenhuma produção pendente para os próximos dias.</p>
+              <p className="muted">Nenhuma produção pendente para esta data.</p>
             ) : null}
           </div>
         </div>
@@ -96,6 +196,9 @@ export default async function AgendaPage() {
                 </div>
               </article>
             ))}
+            {agenda.length === 0 ? (
+              <p className="muted">Nenhum pedido encontrado para os filtros selecionados.</p>
+            ) : null}
           </div>
         </div>
       </section>

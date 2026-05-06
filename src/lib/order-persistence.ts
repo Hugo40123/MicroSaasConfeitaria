@@ -1,5 +1,6 @@
 import type { Order } from "@/lib/sample-data";
 import { orders } from "@/lib/sample-data";
+import type { Prisma } from "@prisma/client";
 import {
   createCustomerPortalOrder as createMockCustomerPortalOrder,
   CUSTOMER_DELIVERY_FEE,
@@ -30,6 +31,12 @@ export type DatabaseOrderStatus =
   | "DELIVERED"
   | "CANCELLED";
 
+export type OrderFilters = {
+  query?: string;
+  status?: DatabaseOrderStatus;
+  date?: string;
+};
+
 export const orderStatusOptions = [
   { value: "AWAITING_CONFIRMATION", label: "Aguardando confirmação" },
   { value: "CONFIRMED", label: "Confirmado" },
@@ -42,6 +49,18 @@ export const orderStatusOptions = [
   value: DatabaseOrderStatus;
   label: string;
 }>;
+
+const databaseOrderStatuses = new Set<DatabaseOrderStatus>(
+  orderStatusOptions.map((status) => status.value)
+);
+
+export function parseDatabaseOrderStatus(value: string | undefined) {
+  if (!value) return null;
+
+  return databaseOrderStatuses.has(value as DatabaseOrderStatus)
+    ? (value as DatabaseOrderStatus)
+    : null;
+}
 
 const statusMap = {
   AWAITING_CONFIRMATION: "aguardando_confirmacao",
@@ -88,6 +107,44 @@ const paymentMethodToDatabaseMap = {
 } as const;
 
 const toMoney = (value: unknown) => Number(value ?? 0);
+
+const dateInputPattern = /^\d{4}-\d{2}-\d{2}$/;
+
+export function formatDateInput(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+export function getTodayDateInput() {
+  return formatDateInput(new Date());
+}
+
+export function addDaysToDateInput(value: string, days: number) {
+  const date = parseDateInput(value) ?? new Date();
+  date.setDate(date.getDate() + days);
+
+  return formatDateInput(date);
+}
+
+function parseDateInput(value: string | undefined) {
+  if (!value || !dateInputPattern.test(value)) return null;
+
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function getDateRange(value: string | undefined) {
+  const start = parseDateInput(value);
+  if (!start) return null;
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 1);
+
+  return { start, end };
+}
 
 const formatDeliveryDate = (value: Date | null) => {
   if (!value) return "Sem data";
@@ -151,13 +208,84 @@ function makePendingTrackingOrder(code: string): Order {
   };
 }
 
-async function getOrdersFromDatabase(storeId: string) {
+function filterMockOrders(filters: OrderFilters | undefined) {
+  const query = filters?.query?.trim().toLowerCase();
+
+  return orders.filter((order) => {
+    if (filters?.status && uiToDatabaseStatusMap[order.status] !== filters.status) {
+      return false;
+    }
+
+    if (query) {
+      const searchable = [
+        order.code,
+        order.customer,
+        order.whatsapp,
+        ...order.items
+      ].join(" ").toLowerCase();
+
+      if (!searchable.includes(query)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+async function getOrdersFromDatabase(storeId: string, filters?: OrderFilters) {
   const prisma = getPrismaClient();
+  const where: Prisma.OrderWhereInput = {
+    storeId
+  };
+  const query = filters?.query?.trim();
+  const dateRange = getDateRange(filters?.date);
+
+  if (filters?.status) {
+    where.status = filters.status;
+  }
+
+  if (dateRange) {
+    where.deliveryDate = {
+      gte: dateRange.start,
+      lt: dateRange.end
+    };
+  }
+
+  if (query) {
+    where.OR = [
+      {
+        code: {
+          contains: query,
+          mode: "insensitive"
+        }
+      },
+      {
+        customerName: {
+          contains: query,
+          mode: "insensitive"
+        }
+      },
+      {
+        customerPhone: {
+          contains: query
+        }
+      },
+      {
+        items: {
+          some: {
+            productName: {
+              contains: query,
+              mode: "insensitive"
+            }
+          }
+        }
+      }
+    ];
+  }
 
   return prisma.order.findMany({
-    where: {
-      storeId
-    },
+    where,
     include: {
       items: true
     },
@@ -168,18 +296,18 @@ async function getOrdersFromDatabase(storeId: string) {
   });
 }
 
-export async function listOrdersForCurrentStore(storeId: string): Promise<{
+export async function listOrdersForCurrentStore(storeId: string, filters?: OrderFilters): Promise<{
   data: Order[];
   source: "database" | "mock";
 }> {
   if (!isDatabaseConfigured()) {
     return {
-      data: orders,
+      data: filterMockOrders(filters),
       source: "mock"
     };
   }
 
-  const dbOrders = await getOrdersFromDatabase(storeId);
+  const dbOrders = await getOrdersFromDatabase(storeId, filters);
 
   return {
     data: dbOrders.map(mapDbOrderToUiOrder),

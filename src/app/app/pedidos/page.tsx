@@ -4,6 +4,7 @@ import { createInternalOrderAction, updateOrderStatusAction } from "@/lib/order-
 import {
   listOrdersForCurrentStore,
   orderStatusOptions,
+  parseDatabaseOrderStatus,
   uiToDatabaseStatusMap,
   type DatabaseOrderStatus
 } from "@/lib/order-persistence";
@@ -34,13 +35,23 @@ export default async function OrdersPage({
   searchParams
 }: {
   searchParams?: Promise<{
+    date?: string;
+    query?: string;
     orderError?: string;
     orderSuccess?: string;
+    status?: string;
   }>;
 }) {
   const user = await requireAuthUser();
   const params = await searchParams;
-  const ordersResult = await listOrdersForCurrentStore(user.storeId);
+  const selectedStatus = parseDatabaseOrderStatus(params?.status);
+  const selectedQuery = params?.query?.trim() ?? "";
+  const selectedDate = params?.date?.trim() ?? "";
+  const ordersResult = await listOrdersForCurrentStore(user.storeId, {
+    query: selectedQuery || undefined,
+    status: selectedStatus ?? undefined,
+    date: selectedDate || undefined
+  });
   const productsResult = await listProductsForCurrentStore(user.storeId);
   const orders = ordersResult.data;
   const products = productsResult.data.filter((product) => product.active);
@@ -169,7 +180,7 @@ export default async function OrdersPage({
           </form>
         </details>
 
-        <div className="search-row">
+        <form action="/app/pedidos" className="search-row search-row-wide">
           <label className="field">
             <span>Busca rápida</span>
             <span style={{ position: "relative" }}>
@@ -186,25 +197,38 @@ export default async function OrdersPage({
               />
               <input
                 className="input"
+                defaultValue={selectedQuery}
+                name="query"
                 placeholder="Cliente, telefone ou código"
                 style={{ paddingLeft: "2.25rem" }}
               />
             </span>
           </label>
           <label className="field">
+            <span>Data de entrega</span>
+            <input
+              className="input"
+              defaultValue={selectedDate}
+              name="date"
+              type="date"
+            />
+          </label>
+          <label className="field">
             <span>Status</span>
-            <select className="select" defaultValue="">
+            <select className="select" defaultValue={selectedStatus ?? ""} name="status">
               <option value="">Todos</option>
-              <option>Aguardando confirmação</option>
-              <option>Em produção</option>
-              <option>Pronto</option>
+              {orderStatusOptions.map((status) => (
+                <option key={status.value} value={status.value}>
+                  {status.label}
+                </option>
+              ))}
             </select>
           </label>
-          <button className="btn btn-secondary" type="button">
+          <button className="btn btn-secondary" type="submit">
             <Filter aria-hidden="true" />
             Filtrar
           </button>
-        </div>
+        </form>
 
         <div className="table-wrap">
           <table>
@@ -215,7 +239,7 @@ export default async function OrdersPage({
                 <th>Entrega</th>
                 <th>Status</th>
                 <th>Total</th>
-                <th>Acoes</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>
