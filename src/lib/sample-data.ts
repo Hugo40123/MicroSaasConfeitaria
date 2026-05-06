@@ -36,7 +36,9 @@ export type Order = {
   source: "Portal do cliente" | "Pedido interno";
   items: string[];
   deliveryDate: string;
+  deliveryDateInput?: string;
   deliveryTime: string;
+  deliveryAddress?: string | null;
   fulfillment: "Retirada" | "Entrega";
   paymentMethod?: "Dinheiro" | "PIX" | "Cartão";
   deliveryFee?: number;
@@ -44,6 +46,7 @@ export type Order = {
   total: number;
   paidSignal: number;
   urgent?: boolean;
+  internalNotes?: string | null;
   storeName?: string;
   storeSlug?: string;
   storePhone?: string;

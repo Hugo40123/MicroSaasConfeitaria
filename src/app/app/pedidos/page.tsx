@@ -1,35 +1,35 @@
-import { StatusBadge } from "@/components/status-badge";
 import { requireAuthUser } from "@/lib/current-user";
-import { createInternalOrderAction, updateOrderStatusAction } from "@/lib/order-actions";
+import {
+  createInternalOrderAction,
+  updateOrderDetailsAction,
+  updateOrderStatusAction
+} from "@/lib/order-actions";
 import {
   listOrdersForCurrentStore,
   orderStatusOptions,
   parseDatabaseOrderStatus,
   uiToDatabaseStatusMap,
-  type DatabaseOrderStatus
 } from "@/lib/order-persistence";
 import { listProductsForCurrentStore } from "@/lib/product-repository";
-import { formatCurrency, type OrderStatus } from "@/lib/sample-data";
+import { formatCurrency, type Order } from "@/lib/sample-data";
 import { makeOrderWhatsAppHref } from "@/lib/whatsapp";
-import { CheckCircle2, Filter, Plus, Save, Search, Send, XCircle } from "lucide-react";
+import { Edit3, Filter, Plus, Save, Search, Send, XCircle } from "lucide-react";
 
-const nextStatusByCurrentStatus: Partial<Record<OrderStatus, DatabaseOrderStatus>> = {
-  aguardando_confirmacao: "CONFIRMED",
-  confirmado: "IN_PRODUCTION",
-  pendente: "CONFIRMED",
-  em_producao: "READY",
-  pronto: "DELIVERED",
-  saiu_para_entrega: "DELIVERED"
-};
+function getFulfillmentValue(order: Order) {
+  return order.fulfillment === "Entrega" ? "DELIVERY" : "PICKUP";
+}
 
-const nextStatusCopy: Partial<Record<OrderStatus, string>> = {
-  aguardando_confirmacao: "Confirmar pedido",
-  confirmado: "Iniciar produção",
-  pendente: "Confirmar pedido",
-  em_producao: "Marcar como pronto",
-  pronto: "Marcar como entregue",
-  saiu_para_entrega: "Marcar como entregue"
-};
+function getPaymentMethodValue(order: Order) {
+  if (order.paymentMethod === "Dinheiro") return "CASH";
+  if (order.paymentMethod === "PIX") return "PIX";
+  if (order.paymentMethod === "Cartão") return "CARD";
+
+  return "";
+}
+
+function getDeliveryTimeValue(order: Order) {
+  return /^\d{2}:\d{2}$/.test(order.deliveryTime) ? order.deliveryTime : "";
+}
 
 export default async function OrdersPage({
   searchParams
@@ -264,7 +264,30 @@ export default async function OrdersPage({
                     </p>
                   </td>
                   <td data-label="Status">
-                    <StatusBadge status={order.status} />
+                    <form action={updateOrderStatusAction} className="inline-status-form">
+                      <input name="orderId" type="hidden" value={order.id} />
+                      <select
+                        className="select compact-select"
+                        defaultValue={uiToDatabaseStatusMap[order.status]}
+                        disabled={isMock}
+                        name="status"
+                        required
+                      >
+                        {orderStatusOptions.map((status) => (
+                          <option key={status.value} value={status.value}>
+                            {status.label}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        className="icon-btn"
+                        disabled={isMock}
+                        title="Salvar status"
+                        type="submit"
+                      >
+                        <Save aria-hidden="true" />
+                      </button>
+                    </form>
                   </td>
                   <td data-label="Total">
                     <strong>{formatCurrency(order.total)}</strong>
@@ -275,24 +298,13 @@ export default async function OrdersPage({
                   </td>
                   <td data-label="Ações">
                     <div className="row-actions">
-                      {nextStatusByCurrentStatus[order.status] ? (
-                        <form action={updateOrderStatusAction}>
-                          <input name="orderId" type="hidden" value={order.id} />
-                          <input
-                            name="status"
-                            type="hidden"
-                            value={nextStatusByCurrentStatus[order.status]}
-                          />
-                          <button
-                            className="icon-btn"
-                            disabled={isMock}
-                            title={nextStatusCopy[order.status]}
-                            type="submit"
-                          >
-                            <CheckCircle2 aria-hidden="true" />
-                          </button>
-                        </form>
-                      ) : null}
+                      <a
+                        className="icon-btn"
+                        href={`#editar-${order.id}`}
+                        title="Editar pedido"
+                      >
+                        <Edit3 aria-hidden="true" />
+                      </a>
 
                       {order.status !== "cancelado" && order.status !== "entregue" ? (
                         <form action={updateOrderStatusAction}>
@@ -317,6 +329,133 @@ export default async function OrdersPage({
                         <Send aria-hidden="true" />
                       </a>
                     </div>
+                    <div className="modal-layer" id={`editar-${order.id}`}>
+                      <a
+                        aria-label="Fechar edição"
+                        className="modal-backdrop"
+                        href="#"
+                      />
+                      <section
+                        aria-labelledby={`editar-${order.id}-titulo`}
+                        className="modal-card"
+                        role="dialog"
+                      >
+                        <div className="modal-head">
+                          <div>
+                            <p className="eyebrow">Editar pedido</p>
+                            <h2 id={`editar-${order.id}-titulo`}>{order.code}</h2>
+                          </div>
+                          <a className="icon-btn" href="#" title="Fechar">
+                            <XCircle aria-hidden="true" />
+                          </a>
+                        </div>
+                        <form action={updateOrderDetailsAction} className="product-form">
+                          <input name="orderId" type="hidden" value={order.id} />
+                          <div className="form-grid">
+                            <label className="field">
+                              <span>Cliente</span>
+                              <input
+                                className="input"
+                                defaultValue={order.customer}
+                                disabled={isMock}
+                                name="customerName"
+                                required
+                              />
+                            </label>
+                            <label className="field">
+                              <span>Telefone/WhatsApp</span>
+                              <input
+                                className="input"
+                                defaultValue={order.whatsapp}
+                                disabled={isMock}
+                                name="customerPhone"
+                                required
+                              />
+                            </label>
+                            <label className="field">
+                              <span>Tipo</span>
+                              <select
+                                className="select"
+                                defaultValue={getFulfillmentValue(order)}
+                                disabled={isMock}
+                                name="fulfillmentType"
+                              >
+                                <option value="PICKUP">Retirada</option>
+                                <option value="DELIVERY">Entrega</option>
+                              </select>
+                            </label>
+                            <label className="field">
+                              <span>Pagamento</span>
+                              <select
+                                className="select"
+                                defaultValue={getPaymentMethodValue(order)}
+                                disabled={isMock}
+                                name="paymentMethod"
+                              >
+                                <option value="">A combinar</option>
+                                <option value="CASH">Dinheiro</option>
+                                <option value="PIX">PIX</option>
+                                <option value="CARD">Cartão</option>
+                              </select>
+                            </label>
+                            <label className="field">
+                              <span>Data</span>
+                              <input
+                                className="input"
+                                defaultValue={order.deliveryDateInput ?? ""}
+                                disabled={isMock}
+                                name="deliveryDate"
+                                required
+                                type="date"
+                              />
+                            </label>
+                            <label className="field">
+                              <span>Horário</span>
+                              <input
+                                className="input"
+                                defaultValue={getDeliveryTimeValue(order)}
+                                disabled={isMock}
+                                name="deliveryTime"
+                                type="time"
+                              />
+                            </label>
+                          </div>
+                          <label className="field">
+                            <span>Endereço</span>
+                            <input
+                              className="input"
+                              defaultValue={order.deliveryAddress ?? ""}
+                              disabled={isMock}
+                              name="deliveryAddress"
+                            />
+                          </label>
+                          <label className="field">
+                            <span>Observações internas</span>
+                            <textarea
+                              className="textarea"
+                              defaultValue={order.internalNotes ?? ""}
+                              disabled={isMock}
+                              name="internalNotes"
+                            />
+                          </label>
+                          <label className="check-field">
+                            <input
+                              defaultChecked={Boolean(order.urgent)}
+                              disabled={isMock}
+                              name="urgent"
+                              type="checkbox"
+                            />
+                            Marcar como urgente
+                          </label>
+                          <div className="actions">
+                            <button className="btn btn-primary" disabled={isMock} type="submit">
+                              <Save aria-hidden="true" />
+                              Salvar pedido
+                            </button>
+                          </div>
+                        </form>
+                      </section>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -324,49 +463,6 @@ export default async function OrdersPage({
           </table>
         </div>
 
-        <div className="product-edit-list">
-          {orders.map((order) => (
-            <details className="product-editor" key={`status-${order.id}`}>
-              <summary>
-                <span>
-                  <strong>Atualizar {order.code}</strong>
-                  <small>
-                    {order.customer} - status atual:{" "}
-                    {orderStatusOptions.find(
-                      (status) => status.value === uiToDatabaseStatusMap[order.status]
-                    )?.label ?? order.status}
-                  </small>
-                </span>
-                <Save aria-hidden="true" />
-              </summary>
-              <form action={updateOrderStatusAction} className="product-form">
-                <input name="orderId" type="hidden" value={order.id} />
-                <label className="field">
-                  <span>Novo status</span>
-                  <select
-                    className="select"
-                    defaultValue={uiToDatabaseStatusMap[order.status]}
-                    disabled={isMock}
-                    name="status"
-                    required
-                  >
-                    {orderStatusOptions.map((status) => (
-                      <option key={status.value} value={status.value}>
-                        {status.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <div className="actions">
-                  <button className="btn btn-primary" disabled={isMock} type="submit">
-                    <Save aria-hidden="true" />
-                    Salvar status
-                  </button>
-                </div>
-              </form>
-            </details>
-          ))}
-        </div>
       </section>
     </>
   );

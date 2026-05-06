@@ -1418,6 +1418,60 @@ th {
   gap: 0.55rem;
 }
 
+.inline-status-form {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: min(100%, 13rem);
+}
+
+.compact-select {
+  min-height: 2.35rem;
+  padding-block: 0.45rem;
+}
+
+.modal-layer {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-layer:target {
+  display: flex;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(32, 36, 44, 0.42);
+}
+
+.modal-card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.85rem;
+  width: min(46rem, 100%);
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 24px 70px rgba(32, 36, 44, 0.24);
+  padding: 1rem;
+}
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .check-field {
   gap: 0.45rem;
   color: var(--ink);

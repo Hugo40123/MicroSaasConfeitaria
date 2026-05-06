@@ -59,6 +59,21 @@ function parsePaymentMethod(formData: FormData) {
   return paymentMethods.has(paymentMethod) ? paymentMethod : null;
 }
 
+function parseDeliveryDate(formData: FormData) {
+  const deliveryDate = parseRequiredString(formData, "deliveryDate", "Data");
+  const parsedDate = new Date(`${deliveryDate}T00:00:00`);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    throw new Error("Informe uma data válida.");
+  }
+
+  return parsedDate;
+}
+
+function parseFulfillmentType(formData: FormData) {
+  return getString(formData, "fulfillmentType") === "DELIVERY" ? "DELIVERY" : "PICKUP";
+}
+
 function makeOrderCode() {
   const suffix = Math.floor(100000 + Math.random() * 900000);
   return `BM-${suffix}`;
@@ -140,6 +155,99 @@ export async function updateOrderStatusAction(formData: FormData) {
   redirect("/app/pedidos?orderSuccess=Status%20atualizado%20com%20sucesso.");
 }
 
+export async function updateOrderDetailsAction(formData: FormData) {
+  const user = await requireAuthUser();
+  let orderPublicTrackingCode = "";
+
+  try {
+    ensureDatabaseConfigured();
+
+    const orderId = parseRequiredString(formData, "orderId", "Pedido");
+    const customerName = parseRequiredString(formData, "customerName", "Cliente");
+    const customerPhone = parseRequiredString(formData, "customerPhone", "Telefone")
+      .replace(/\D/g, "");
+    const fulfillmentType = parseFulfillmentType(formData);
+    const deliveryDate = parseDeliveryDate(formData);
+    const deliveryTime = getString(formData, "deliveryTime") || null;
+    const deliveryAddress = getString(formData, "deliveryAddress") || null;
+    const internalNotes = getString(formData, "internalNotes") || null;
+    const paymentMethod = parsePaymentMethod(formData);
+    const urgent = getString(formData, "urgent") === "on";
+    const prisma = getPrismaClient();
+
+    if (customerPhone.length < 10) {
+      throw new Error("Informe um telefone válido.");
+    }
+
+    const data = await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findFirst({
+        where: {
+          id: orderId,
+          storeId: user.storeId
+        },
+        select: {
+          id: true,
+          publicTrackingCode: true
+        }
+      });
+
+      if (!order) {
+        throw new Error("Pedido não encontrado para esta loja.");
+      }
+
+      const customer = await tx.customer.upsert({
+        where: {
+          storeId_phone: {
+            storeId: user.storeId,
+            phone: customerPhone
+          }
+        },
+        update: {
+          name: customerName,
+          whatsapp: customerPhone,
+          address: deliveryAddress
+        },
+        create: {
+          storeId: user.storeId,
+          name: customerName,
+          phone: customerPhone,
+          whatsapp: customerPhone,
+          address: deliveryAddress
+        }
+      });
+
+      await tx.order.update({
+        where: {
+          id: order.id
+        },
+        data: {
+          customerId: customer.id,
+          customerName,
+          customerPhone,
+          deliveryAddress,
+          deliveryDate,
+          deliveryTime,
+          fulfillmentType,
+          internalNotes,
+          paymentMethod,
+          urgent
+        }
+      });
+
+      return order;
+    });
+    orderPublicTrackingCode = data.publicTrackingCode;
+  } catch (error) {
+    redirectWithOrderError(error);
+  }
+
+  revalidatePath("/app");
+  revalidatePath("/app/pedidos");
+  revalidatePath("/app/agenda");
+  revalidatePath(`/pedido/${orderPublicTrackingCode}`);
+  redirect("/app/pedidos?orderSuccess=Pedido%20atualizado%20com%20sucesso.");
+}
+
 export async function createInternalOrderAction(formData: FormData) {
   const user = await requireAuthUser();
   let orderPublicTrackingCode = "";
@@ -152,9 +260,8 @@ export async function createInternalOrderAction(formData: FormData) {
     const customerName = parseRequiredString(formData, "customerName", "Cliente");
     const customerPhone = parseRequiredString(formData, "customerPhone", "Telefone")
       .replace(/\D/g, "");
-    const fulfillmentType =
-      getString(formData, "fulfillmentType") === "DELIVERY" ? "DELIVERY" : "PICKUP";
-    const deliveryDate = parseRequiredString(formData, "deliveryDate", "Data");
+    const fulfillmentType = parseFulfillmentType(formData);
+    const deliveryDate = parseDeliveryDate(formData);
     const deliveryTime = getString(formData, "deliveryTime") || null;
     const deliveryAddress = getString(formData, "deliveryAddress") || null;
     const internalNotes = getString(formData, "internalNotes") || null;
@@ -210,7 +317,7 @@ export async function createInternalOrderAction(formData: FormData) {
           source: "INTERNAL",
           status: "CONFIRMED",
           fulfillmentType,
-          deliveryDate: new Date(`${deliveryDate}T00:00:00`),
+        deliveryDate,
           deliveryTime,
           customerName,
           customerPhone,
