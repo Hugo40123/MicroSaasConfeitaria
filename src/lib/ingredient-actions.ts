@@ -102,6 +102,62 @@ export async function createIngredientAction(formData: FormData) {
   redirect("/app/produtos?productSuccess=Insumo%20criado%20com%20sucesso.");
 }
 
+export async function updateIngredientAction(formData: FormData) {
+  try {
+    ensureDatabaseConfigured();
+
+    const user = await requirePermission("manage_products");
+    const ingredientId = parseRequiredString(formData, "ingredientId", "Insumo");
+    const name = parseRequiredString(formData, "name", "Nome");
+    const unit = parseIngredientUnit(getString(formData, "unit"));
+    const costPerUnit = parsePositiveDecimal(formData, "costPerUnit", "Custo por unidade");
+    const stockQuantity = parseOptionalStock(formData, "stockQuantity", "Estoque") ?? 0;
+    const lowStockAlert = parseOptionalStock(formData, "lowStockAlert", "Alerta de estoque");
+    const prisma = getPrismaClient();
+
+    await prisma.$transaction(async (tx) => {
+      const updatedIngredient = await tx.ingredient.updateMany({
+        where: {
+          id: ingredientId,
+          storeId: user.storeId
+        },
+        data: {
+          name,
+          unit,
+          costPerUnit,
+          stockQuantity,
+          lowStockAlert
+        }
+      });
+
+      if (updatedIngredient.count === 0) {
+        throw new Error("Insumo não encontrado para esta loja.");
+      }
+
+      const affectedProducts = await tx.productRecipeItem.findMany({
+        where: {
+          ingredientId,
+          storeId: user.storeId
+        },
+        distinct: ["productId"],
+        select: {
+          productId: true
+        }
+      });
+
+      for (const item of affectedProducts) {
+        await recalculateProductPricing(tx, user.storeId, item.productId);
+      }
+    });
+
+    revalidateProducts();
+  } catch (error) {
+    redirectWithProductError(error);
+  }
+
+  redirect("/app/produtos?productSuccess=Insumo%20atualizado%20com%20sucesso.");
+}
+
 export async function addRecipeItemAction(formData: FormData) {
   try {
     ensureDatabaseConfigured();

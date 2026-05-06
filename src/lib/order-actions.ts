@@ -2,6 +2,10 @@
 
 import { requireAuthUser } from "@/lib/current-user";
 import {
+  deductInventoryForOrder,
+  stockDeductionStatuses
+} from "@/lib/inventory-service";
+import {
   orderStatusOptions,
   type DatabaseOrderStatus
 } from "@/lib/order-persistence";
@@ -77,27 +81,36 @@ export async function updateOrderStatusAction(formData: FormData) {
   }
 
   const prisma = getPrismaClient();
-  const order = await prisma.order.findFirst({
-    where: {
-      id: orderId,
-      storeId: user.storeId
-    },
-    select: {
-      publicTrackingCode: true
-    }
-  });
+  const order = await prisma.$transaction(async (tx) => {
+    const currentOrder = await tx.order.findFirst({
+      where: {
+        id: orderId,
+        storeId: user.storeId
+      },
+      select: {
+        id: true,
+        publicTrackingCode: true
+      }
+    });
 
-  if (!order) {
-    throw new Error("Pedido não encontrado para esta loja.");
-  }
-
-  await prisma.order.update({
-    where: {
-      id: orderId
-    },
-    data: {
-      status
+    if (!currentOrder) {
+      throw new Error("Pedido não encontrado para esta loja.");
     }
+
+    await tx.order.update({
+      where: {
+        id: currentOrder.id
+      },
+      data: {
+        status
+      }
+    });
+
+    if (stockDeductionStatuses.has(status)) {
+      await deductInventoryForOrder(tx, user.storeId, currentOrder.id);
+    }
+
+    return currentOrder;
   });
 
   revalidatePath("/app");
@@ -165,7 +178,7 @@ export async function createInternalOrderAction(formData: FormData) {
       }
     });
 
-    return tx.order.create({
+    const order = await tx.order.create({
       data: {
         storeId: user.storeId,
         customerId: customer.id,
@@ -193,9 +206,14 @@ export async function createInternalOrderAction(formData: FormData) {
         }
       },
       select: {
+        id: true,
         publicTrackingCode: true
       }
     });
+
+    await deductInventoryForOrder(tx, user.storeId, order.id);
+
+    return order;
   });
 
   revalidatePath("/app");

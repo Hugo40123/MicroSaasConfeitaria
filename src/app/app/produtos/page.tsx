@@ -2,7 +2,8 @@ import { requirePermission } from "@/lib/current-user";
 import {
   addRecipeItemAction,
   createIngredientAction,
-  removeRecipeItemAction
+  removeRecipeItemAction,
+  updateIngredientAction
 } from "@/lib/ingredient-actions";
 import {
   ingredientUnitOptions,
@@ -23,6 +24,7 @@ import {
 } from "@/lib/product-repository";
 import { formatCurrency } from "@/lib/sample-data";
 import {
+  AlertTriangle,
   Edit3,
   Eye,
   EyeOff,
@@ -30,6 +32,7 @@ import {
   GlobeLock,
   ImageUp,
   Plus,
+  Save,
   Search,
   Trash2
 } from "lucide-react";
@@ -272,6 +275,128 @@ function IngredientForm({ disabled }: { disabled: boolean }) {
   );
 }
 
+function IngredientList({
+  disabled,
+  ingredients
+}: {
+  disabled: boolean;
+  ingredients: IngredientSummary[];
+}) {
+  if (ingredients.length === 0) {
+    return (
+      <p className="muted" style={{ marginTop: "0.85rem" }}>
+        Nenhum insumo cadastrado ainda.
+      </p>
+    );
+  }
+
+  return (
+    <div className="product-edit-list">
+      {ingredients.map((ingredient) => (
+        <form
+          action={updateIngredientAction}
+          className="product-editor"
+          key={ingredient.id}
+        >
+          <input name="ingredientId" type="hidden" value={ingredient.id} />
+          <div className="section-head">
+            <div>
+              <h3>{ingredient.name}</h3>
+              <p className="muted">
+                Estoque: {ingredient.stockQuantity} {ingredient.unit} - Custo:{" "}
+                {formatCurrency(ingredient.costPerUnit)} / {ingredient.unit}
+              </p>
+            </div>
+            <span className={`badge ${ingredient.lowStock ? "pending" : "ready"}`}>
+              {ingredient.lowStock ? (
+                <AlertTriangle aria-hidden="true" />
+              ) : null}
+              {ingredient.lowStock ? "Estoque baixo" : "Estoque ok"}
+            </span>
+          </div>
+
+          <div className="form-grid">
+            <label className="field">
+              <span>Nome do insumo</span>
+              <input
+                className="input"
+                defaultValue={ingredient.name}
+                disabled={disabled}
+                maxLength={120}
+                name="name"
+                required
+              />
+            </label>
+            <label className="field">
+              <span>Unidade</span>
+              <select
+                className="select"
+                defaultValue={ingredient.unit}
+                disabled={disabled}
+                name="unit"
+                required
+              >
+                {ingredientUnitOptions.map((unit) => (
+                  <option key={unit.value} value={unit.value}>
+                    {unit.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              <span>Custo por unidade</span>
+              <input
+                className="input"
+                defaultValue={ingredient.costPerUnit}
+                disabled={disabled}
+                inputMode="decimal"
+                min="0.0001"
+                name="costPerUnit"
+                required
+                step="0.0001"
+                type="number"
+              />
+            </label>
+            <label className="field">
+              <span>Estoque atual</span>
+              <input
+                className="input"
+                defaultValue={ingredient.stockQuantity}
+                disabled={disabled}
+                inputMode="decimal"
+                min="0"
+                name="stockQuantity"
+                step="0.001"
+                type="number"
+              />
+            </label>
+            <label className="field">
+              <span>Alerta de estoque baixo</span>
+              <input
+                className="input"
+                defaultValue={ingredient.lowStockAlert ?? ""}
+                disabled={disabled}
+                inputMode="decimal"
+                min="0"
+                name="lowStockAlert"
+                step="0.001"
+                type="number"
+              />
+            </label>
+          </div>
+
+          <div className="actions">
+            <button className="btn btn-secondary" disabled={disabled} type="submit">
+              <Save aria-hidden="true" />
+              Salvar insumo
+            </button>
+          </div>
+        </form>
+      ))}
+    </div>
+  );
+}
+
 function RecipeEditor({
   disabled,
   ingredients,
@@ -479,6 +604,17 @@ export default async function ProductsPage({
             <Plus aria-hidden="true" />
           </summary>
           <IngredientForm disabled={isMock} />
+        </details>
+
+        <details className="product-editor" open={ingredients.length > 0}>
+          <summary>
+            <span>
+              <strong>Estoque de insumos</strong>
+              <small>Ajuste custo, saldo atual e alerta de estoque baixo.</small>
+            </span>
+            <Edit3 aria-hidden="true" />
+          </summary>
+          <IngredientList disabled={isMock} ingredients={ingredients} />
         </details>
 
         <div className="search-row">

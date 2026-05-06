@@ -210,6 +210,7 @@ model Order {
   totalAmount        Decimal         @default(0) @db.Decimal(10, 2)
   signalPaid         Boolean         @default(false)
   signalAmount       Decimal?        @db.Decimal(10, 2)
+  stockDeductedAt    DateTime?
   publicTrackingCode String          @unique
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
